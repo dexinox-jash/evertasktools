@@ -1,0 +1,20 @@
+Developer Contact Information
+
+App Name: EverTask
+Package Name: com.evertask.app
+
+Support Email: support@evertask.app
+Privacy Email: privacy@evertask.app
+Website: https://evertask.app
+
+Physical Address:
+[Add your business address here if required by Google Play in your region]
+
+Phone Number:
+[Add if required by Google Play in your region]
+
+---
+
+For Google Play Console:
+- Primary contact email: support@evertask.app
+- Website: https://evertask.app

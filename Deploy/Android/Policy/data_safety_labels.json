@@ -1,0 +1,198 @@
+{
+  "data_shared": [],
+  "data_collected": [],
+  "security_practices": {
+    "encrypted_in_transit": false,
+    "encrypted_at_rest": true,
+    "independent_security_review": false
+  },
+  "app_details": {
+    "name": "EverTask",
+    "privacy_policy_url": "https://evertask.app/privacy",
+    "terms_of_service_url": "https://evertask.app/terms",
+    "offline_functionality": true,
+    "data_stored_locally": true,
+    "account_required": false,
+    "analytics_used": false,
+    "advertising_used": false
+  },
+  "data_types": {
+    "personal_info": {
+      "collected": false,
+      "shared": false,
+      "types": []
+    },
+    "financial_info": {
+      "collected": false,
+      "shared": false,
+      "types": []
+    },
+    "health_fitness": {
+      "collected": false,
+      "shared": false,
+      "types": []
+    },
+    "messages": {
+      "collected": false,
+      "shared": false,
+      "types": []
+    },
+    "photos_videos": {
+      "collected": false,
+      "shared": false,
+      "ephemeral": false,
+      "note": "Photos are only accessed when user explicitly attaches them to tasks. Photos remain stored locally on device."
+    },
+    "audio": {
+      "collected": false,
+      "shared": false,
+      "types": []
+    },
+    "files_docs": {
+      "collected": false,
+      "shared": false,
+      "note": "Files are only accessed when user explicitly attaches them to tasks. Files remain stored locally on device."
+    },
+    "calendar": {
+      "collected": false,
+      "shared": false,
+      "types": []
+    },
+    "contacts": {
+      "collected": false,
+      "shared": false,
+      "types": []
+    },
+    "location": {
+      "collected": false,
+      "shared": false,
+      "types": [],
+      "precise_location": false,
+      "approximate_location": false
+    },
+    "music_audio": {
+      "collected": false,
+      "shared": false,
+      "types": []
+    },
+    "app_activity": {
+      "collected": false,
+      "shared": false,
+      "types": [],
+      "app_interactions": false,
+      "in_app_search_history": false,
+      "installed_apps": false,
+      "other_user_generated_content": false,
+      "other_actions": false
+    },
+    "web_browsing": {
+      "collected": false,
+      "shared": false,
+      "types": [],
+      "web_browsing_history": false
+    },
+    "app_info_performance": {
+      "collected": false,
+      "shared": false,
+      "types": [],
+      "crash_logs": false,
+      "diagnostics": false,
+      "other_app_performance_data": false
+    },
+    "device_ids": {
+      "collected": false,
+      "shared": false,
+      "types": []
+    }
+  },
+  "purposes": {
+    "app_functionality": {
+      "used": true,
+      "description": "Data is stored locally to provide core app functionality such as task management, reminders, and template expansion."
+    },
+    "analytics": {
+      "used": false,
+      "description": "No analytics data is collected."
+    },
+    "developer_communications": {
+      "used": false,
+      "description": "No user data is used for developer communications."
+    },
+    "advertising": {
+      "used": false,
+      "description": "No advertising or marketing data is collected."
+    },
+    "fraud_prevention": {
+      "used": false,
+      "description": "No fraud prevention data is collected."
+    },
+    "personalization": {
+      "used": false,
+      "description": "No data is used for personalization beyond user-controlled preferences stored locally."
+    },
+    "account_management": {
+      "used": false,
+      "description": "No accounts are required."
+    }
+  },
+  "security_details": {
+    "encryption_in_transit": {
+      "used": false,
+      "reason": "App does not transmit user data over networks. All data remains on device."
+    },
+    "encryption_at_rest": {
+      "used": true,
+      "details": "User data is stored in the app's private SQLite database, protected by Android sandbox and device filesystem encryption."
+    },
+    "independent_security_review": {
+      "conducted": false,
+      "details": "No independent security review has been conducted."
+    },
+    "secure_deletion": {
+      "available": true,
+      "details": "Users can delete all app data through device settings or by uninstalling the app."
+    },
+    "data_retention": {
+      "policy": "Data is retained on device only. Users have complete control over data retention through app usage and device settings.",
+      "retention_period": "Until user deletes data or uninstalls the app."
+    }
+  },
+  "user_rights": {
+    "access": {
+      "available": true,
+      "method": "All data is accessible within the app. Users can export their data at any time."
+    },
+    "deletion": {
+      "available": true,
+      "method": "Users can delete data within the app, through device settings, or by uninstalling."
+    },
+    "correction": {
+      "available": true,
+      "method": "Users can edit any data directly within the app."
+    },
+    "portability": {
+      "available": true,
+      "method": "Users can export their data in JSON format for portability."
+    }
+  },
+  "compliance": {
+    "gdpr": {
+      "compliant": true,
+      "basis": "App does not collect personal data. All data remains on user's device."
+    },
+    "ccpa": {
+      "compliant": true,
+      "basis": "App does not sell personal information. No personal information is collected."
+    },
+    "coppa": {
+      "compliant": true,
+      "basis": "App does not knowingly collect personal information from children under 13."
+    }
+  },
+  "last_updated": "2026-04-14",
+  "contact": {
+    "privacy_email": "privacy@evertask.app",
+    "support_email": "support@evertask.app",
+    "website": "https://evertask.app"
+  }
+}

@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Ever Task Tools - AndroidManifest.xml Configuration
+  
+  This file documents all required manifest entries for:
+  - App Actions (actions.xml)
+  - Voice command handling (BroadcastReceiver)
+  - Deep link handling (Intent filters)
+  - Glance widgets (AppWidgetProviderInfo)
+  - Notifications (receivers and permissions)
+  - Text-to-Speech features
+  
+  Copy these entries into your app's AndroidManifest.xml
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    
+    <!-- ========================================================================== -->
+    <!-- PERMISSIONS                                                                -->
+    <!-- ========================================================================== -->
+    
+    <!-- Voice recording for future voice input features -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    
+    <!-- Foreground service for persistent task notifications -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    
+    <!-- Boot completed for restoring notifications after reboot -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    
+    <!-- Notifications -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    
+    <!-- Wake lock for alarm-style notifications -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    
+    <!-- Text-to-Speech (no permission needed, but requires TTS engine) -->
+    <!-- TTS availability checked at runtime -->
+    
+    <!-- ========================================================================== -->
+    <!-- APPLICATION                                                                -->
+    <!-- ========================================================================== -->
+    
+    <application
+        android:name=".EverTaskApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.EverTask"
+        tools:targetApi="34">
+        
+        <!-- ===================================================================== -->
+        <!-- MAIN ACTIVITY                                                         -->
+        <!-- ===================================================================== -->
+        
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.EverTask">
+            
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            
+            <!-- Deep link intent filter for evertask:// scheme -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data 
+                    android:scheme="evertask"
+                    android:host="create" />
+            </intent-filter>
+            
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data 
+                    android:scheme="evertask"
+                    android:host="read" />
+            </intent-filter>
+            
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data 
+                    android:scheme="evertask"
+                    android:host="complete" />
+            </intent-filter>
+            
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data 
+                    android:scheme="evertask"
+                    android:host="delete" />
+            </intent-filter>
+            
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data 
+                    android:scheme="evertask"
+                    android:host="widget" />
+            </intent-filter>
+            
+            <!-- App Actions meta-data -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity>
+        
+        <!-- ===================================================================== -->
+        <!-- VOICE COMMAND RECEIVER                                                -->
+        <!-- ===================================================================== -->
+        
+        <!-- 
+          VoiceCommandReceiver handles voice commands from Google Assistant.
+          Security: Only accepts calls from authorized packages.
+        -->
+        <receiver
+            android:name=".voice.VoiceCommandReceiver"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_STICKY"
+            tools:ignore="ExportedReceiver">
+            
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="evertask" />
+            </intent-filter>
+        </receiver>
+        
+        <!-- ===================================================================== -->
+        <!-- NOTIFICATION ACTION RECEIVER                                          -->
+        <!-- ===================================================================== -->
+        
+        <!-- 
+          NotificationActionReceiver handles notification button clicks.
+          Must be exported to receive PendingIntent broadcasts.
+        -->
+        <receiver
+            android:name=".notification.NotificationActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.evertask.action.COMPLETE" />
+                <action android:name="com.evertask.action.SKIP" />
+                <action android:name="com.evertask.action.END" />
+                <action android:name="com.evertask.action.SNOOZE" />
+            </intent-filter>
+        </receiver>
+        
+        <!-- ===================================================================== -->
+        <!-- BOOT RECEIVER                                                         -->
+        <!-- ===================================================================== -->
+        
+        <!-- 
+          BootReceiver restores notifications after device reboot.
+        -->
+        <receiver
+            android:name=".receiver.BootReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        
+        <!-- ===================================================================== -->
+        <!-- GLANCE WIDGET                                                         -->
+        <!-- ===================================================================== -->
+        
+        <!-- 
+          EverTaskWidgetReceiver - Jetpack Glance widget provider.
+          Uses GlanceAppWidgetReceiver instead of deprecated AppWidgetProvider.
+        -->
+        <receiver
+            android:name=".widget.EverTaskWidgetReceiver"
+            android:exported="false">
+            
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            
+            <!-- Widget metadata -->
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/evertask_widget_info" />
+        </receiver>
+        
+        <!-- ===================================================================== -->
+        <!-- APP ACTIONS                                                           -->
+        <!-- ===================================================================== -->
+        
+        <!-- 
+          App Actions meta-data - links to actions.xml
+          Place in MainActivity or Application element.
+        -->
+        <meta-data
+            android:name="com.google.android.actions"
+            android:resource="@xml/actions" />
+        
+        <!-- ===================================================================== -->
+        <!-- SERVICES                                                              -->
+        <!-- ===================================================================== -->
+        
+        <!-- 
+          Foreground service for persistent task notifications.
+          Required for ongoing notifications on Android 9+.
+        -->
+        <service
+            android:name=".service.TaskForegroundService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+        
+        <!-- ===================================================================== -->
+        <!-- PROVIDERS                                                             -->
+        <!-- ===================================================================== -->
+        
+        <!-- Glance App Widget Manager -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.glance.appwidget.AppWidgetInitializer"
+                android:value="androidx.startup" />
+        </provider>
+        
+    </application>
+    
+</manifest>
+
+<!--
+  ============================================================================
+  REQUIRED RESOURCES
+  ============================================================================
+  
+  Create these resource files:
+  
+  1. res/xml/actions.xml
+     - App Actions configuration (see actions.xml in this package)
+  
+  2. res/xml/evertask_widget_info.xml
+     - Widget provider metadata
+     
+     <?xml version="1.0" encoding="utf-8"?>
+     <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+         android:initialLayout="@layout/widget_preview"
+         android:minWidth="40dp"
+         android:minHeight="40dp"
+         android:minResizeWidth="40dp"
+         android:minResizeHeight="40dp"
+         android:maxResizeWidth="320dp"
+         android:maxResizeHeight="320dp"
+         android:targetCellWidth="2"
+         android:targetCellHeight="2"
+         android:resizeMode="horizontal|vertical"
+         android:widgetCategory="home_screen|keyguard"
+         android:previewImage="@drawable/widget_preview"
+         android:description="@string/widget_description" />
+  
+  3. res/layout/widget_preview.xml
+     - Preview layout for widget picker
+  
+  4. res/drawable/widget_preview.png
+     - Preview image for widget picker
+  
+  5. res/values/strings.xml
+     - Add widget description string
+  
+  6. res/xml/shortcuts.xml (optional)
+     - App shortcuts for quick actions
+-->
+
+<!--
+  ============================================================================
+  GRADLE DEPENDENCIES
+  ============================================================================
+  
+  Add these dependencies to your app's build.gradle:
+  
+  dependencies {
+      // Glance widgets (required)
+      implementation "androidx.glance:glance:1.0.0"
+      implementation "androidx.glance:glance-appwidget:1.0.0"
+      implementation "androidx.glance:glance-material3:1.0.0"
+      
+      // For widget preview
+      implementation "androidx.glance:glance-preview:1.0.0"
+      
+      // Hilt for dependency injection
+      implementation "com.google.dagger:hilt-android:2.48"
+      kapt "com.google.dagger:hilt-compiler:2.48"
+      
+      // Notifications
+      implementation "androidx.core:core-ktx:1.12.0"
+      
+      // Coroutines
+      implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
+      
+      // DataStore for widget preferences
+      implementation "androidx.datastore:datastore-preferences:1.0.0"
+  }
+-->
+
+<!--
+  ============================================================================
+  TESTING VOICE COMMANDS
+  ============================================================================
+  
+  Test voice commands using adb:
+  
+  1. Create task:
+     adb shell am start -a android.intent.action.VIEW \
+       -d "evertask://create?title=Clean%20garage" \
+       --es android.intent.extra.CALLING_PACKAGE com.google.android.googlequicksearchbox
+  
+  2. Read tasks:
+     adb shell am start -a android.intent.action.VIEW \
+       -d "evertask://read" \
+       --es android.intent.extra.CALLING_PACKAGE com.google.android.googlequicksearchbox
+  
+  3. Complete subtask:
+     adb shell am start -a android.intent.action.VIEW \
+       -d "evertask://complete?item=Clear%20workspace" \
+       --es android.intent.extra.CALLING_PACKAGE com.google.android.googlequicksearchbox
+  
+  4. Delete task:
+     adb shell am start -a android.intent.action.VIEW \
+       -d "evertask://delete?item=Clean%20garage" \
+       --es android.intent.extra.CALLING_PACKAGE com.google.android.googlequicksearchbox
+-->

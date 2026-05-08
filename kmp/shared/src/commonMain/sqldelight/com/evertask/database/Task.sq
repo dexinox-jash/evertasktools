@@ -1,0 +1,154 @@
+-- Task entity table
+CREATE TABLE task (
+    id TEXT PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    source_template_id TEXT,
+    icon_name TEXT NOT NULL DEFAULT 'default_task',
+    is_completed INTEGER NOT NULL DEFAULT 0,
+    is_archived INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER AS kotlinx.datetime.Instant NOT NULL,
+    completed_at INTEGER AS kotlinx.datetime.Instant,
+    sort_order INTEGER NOT NULL DEFAULT 0
+);
+
+-- Subtask entity table
+CREATE TABLE subtask (
+    id TEXT PRIMARY KEY NOT NULL,
+    task_id TEXT NOT NULL,
+    text TEXT NOT NULL,
+    duration_minutes INTEGER NOT NULL DEFAULT 0,
+    is_completed INTEGER NOT NULL DEFAULT 0,
+    completed_at INTEGER AS kotlinx.datetime.Instant,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (task_id) REFERENCES task(id) ON DELETE CASCADE
+);
+
+-- Template entity table
+CREATE TABLE task_template (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    keywords TEXT NOT NULL, -- JSON array
+    subtasks TEXT NOT NULL, -- JSON array
+    icon TEXT NOT NULL DEFAULT 'default_template',
+    is_user_created INTEGER NOT NULL DEFAULT 0,
+    is_system INTEGER NOT NULL DEFAULT 0
+);
+
+-- Indexes
+CREATE INDEX idx_task_completed ON task(is_completed);
+CREATE INDEX idx_task_archived ON task(is_archived);
+CREATE INDEX idx_subtask_task ON subtask(task_id);
+CREATE INDEX idx_template_system ON task_template(is_system);
+
+-- Queries: Task
+getAllTasks:
+SELECT * FROM task ORDER BY sort_order ASC, created_at DESC;
+
+getActiveTasks:
+SELECT * FROM task WHERE is_archived = 0 ORDER BY sort_order ASC, created_at DESC;
+
+getArchivedTasks:
+SELECT * FROM task WHERE is_archived = 1 ORDER BY created_at DESC;
+
+getTaskById:
+SELECT * FROM task WHERE id = ?;
+
+insertTask:
+INSERT INTO task (id, title, source_template_id, icon_name, is_completed, is_archived, created_at, completed_at, sort_order)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateTask:
+UPDATE task SET
+    title = ?,
+    source_template_id = ?,
+    icon_name = ?,
+    is_completed = ?,
+    is_archived = ?,
+    completed_at = ?
+WHERE id = ?;
+
+updateTaskSortOrder:
+UPDATE task SET sort_order = ? WHERE id = ?;
+
+updateSubtaskSortOrder:
+UPDATE subtask SET sort_order = ? WHERE id = ?;
+
+deleteTask:
+DELETE FROM task WHERE id = ?;
+
+markTaskCompleted:
+UPDATE task SET is_completed = 1, completed_at = ? WHERE id = ?;
+
+archiveTask:
+UPDATE task SET is_archived = 1 WHERE id = ?;
+
+unarchiveTask:
+UPDATE task SET is_archived = 0 WHERE id = ?;
+
+clearCompletedTasks:
+DELETE FROM task WHERE is_completed = 1;
+
+deleteAllTasks:
+DELETE FROM task;
+
+deleteAllSubtasks:
+DELETE FROM subtask;
+
+-- Queries: Subtask
+getSubtasksByTaskId:
+SELECT * FROM subtask WHERE task_id = ? ORDER BY sort_order;
+
+insertSubtask:
+INSERT INTO subtask (id, task_id, text, duration_minutes, is_completed, completed_at, sort_order)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+updateSubtask:
+UPDATE subtask SET
+    text = ?,
+    duration_minutes = ?,
+    is_completed = ?,
+    completed_at = ?
+WHERE id = ?;
+
+markSubtaskCompleted:
+UPDATE subtask SET is_completed = 1, completed_at = ? WHERE id = ?;
+
+getSubtaskById:
+SELECT * FROM subtask WHERE id = ?;
+
+deleteSubtask:
+DELETE FROM subtask WHERE id = ?;
+
+deleteSubtasksByTaskId:
+DELETE FROM subtask WHERE task_id = ?;
+
+searchTasks:
+SELECT * FROM task WHERE title LIKE '%' || ? || '%' ORDER BY created_at DESC;
+
+-- Queries: Template
+getAllTemplates:
+SELECT * FROM task_template ORDER BY name;
+
+getSystemTemplates:
+SELECT * FROM task_template WHERE is_system = 1 ORDER BY name;
+
+getUserTemplates:
+SELECT * FROM task_template WHERE is_user_created = 1 ORDER BY name;
+
+getTemplateById:
+SELECT * FROM task_template WHERE id = ?;
+
+insertTemplate:
+INSERT INTO task_template (id, name, keywords, subtasks, icon, is_user_created, is_system)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+updateTemplate:
+UPDATE task_template SET
+    name = ?,
+    keywords = ?,
+    subtasks = ?,
+    icon = ?
+WHERE id = ?;
+
+deleteTemplate:
+DELETE FROM task_template WHERE id = ?;

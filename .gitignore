@@ -1,0 +1,27 @@
+# Android / KMP
+.gradle/
+build/
+.idea/
+local.properties
+*.iml
+.cxx/
+
+# iOS
+xcuserdata/
+DerivedData/
+*.xcworkspace/
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+
+# Agent tooling
+.claude/
+.skills/
+.agents/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

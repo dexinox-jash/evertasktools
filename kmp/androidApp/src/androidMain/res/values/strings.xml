@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">EverTask Tools</string>
+    <string name="widget_label">EverTask Widget</string>
+    <string name="default_notification_channel_id">evertask_default_channel</string>
+    <string name="new_task">New Task</string>
+    <string name="archive">Archive</string>
+    <string name="cancel">Cancel</string>
+    <string name="create">Create</string>
+    <string name="no_tasks_yet">No tasks yet</string>
+    <string name="create_first_task_hint">Tap the + button to create your first task</string>
+    <string name="what_do_you_need_to_do">What do you need to do?</string>
+    <string name="create_new_task">Create New Task</string>
+    <string name="example_clean_kitchen">e.g., Clean the kitchen</string>
+</resources>

@@ -1,0 +1,62 @@
+🎯 EverTask - Break Down Any Task in Seconds
+
+Turn overwhelming to-dos into simple, actionable steps with the power of your voice. EverTask is the fastest way to break down complex tasks into manageable subtasks.
+
+✨ KEY FEATURES
+
+🎤 Voice-First Task Creation
+Simply speak your task and let EverTask do the rest. "Clean my room" instantly becomes a checklist of specific actions. No typing required!
+
+📋 Smart Task Templates
+Our intelligent templates recognize common activities and automatically generate the perfect breakdown:
+• 🧹 Clean Room - From cluttered to clean in 4 steps
+• 📧 Write Email - Draft, outline, expand, and send
+• 🛒 Grocery Shop - Plan, list, shop, and organize
+• 📚 Study Session - Pomodoro-powered focus sessions
+• 🍳 Cook Meal - Prep, cook, serve, and clean
+• 💪 Gym Workout - Warm up, train, cool down, recover
+• 🤝 Meeting Prep - Agenda review and talking points
+• ✈️ Travel Pack - Weather check and organized packing
+
+📊 Visual Progress Tracking
+Watch your progress with satisfying checkmarks and completion stats. Every subtask completed brings you closer to your goal!
+
+⚡ Priority & Organization
+Set priorities, track due dates, and keep everything organized. Your tasks, your way.
+
+🤖 ANDROID EXCLUSIVE FEATURES
+• 🎨 Material You design with dynamic theming
+• 💾 Room database for fast local storage
+• 🎙️ App Actions - "Hey Google, create a task in EverTask"
+• 📱 Home Screen Widgets for quick access
+• ⏰ WorkManager for reliable notifications
+• 👁️ Glance widgets with beautiful layouts
+
+👥 PERFECT FOR
+✓ Students managing assignments
+✓ Professionals handling projects
+✓ Parents organizing household tasks
+✓ Anyone who wants to get things done
+
+💡 WHY EVERTASK?
+
+Traditional to-do apps leave you staring at a blank screen, unsure where to start. EverTask eliminates that friction. Our smart templates and voice recognition mean you spend less time organizing and more time doing.
+
+The average person wastes 23 minutes getting back on track after an interruption. With EverTask, you always know exactly what to do next.
+
+🔒 PRIVACY FIRST
+Your tasks stay on your device. We don't collect or sell your data. Ever.
+
+⭐ EVERTASK PRO
+EverTask is free to download with core features. Unlock unlimited templates, advanced analytics, and cloud backup with EverTask Pro.
+
+🔥 KEYWORDS
+task manager, to do list, task breakdown, subtasks, productivity app, voice tasks, smart templates, task organizer, checklist app, todo list, get things done, task planning, project management, daily planner, goal tracker, cleaning checklist, grocery list, study planner, workout tracker, meeting prep, pomodoro timer, focus mode, time management, work life balance, personal organizer, habit builder, minimalist design, material you, dark mode, widget support, google assistant, app actions, glance widgets
+
+📲 Download EverTask today and transform the way you tackle your to-do list!
+
+---
+
+❓ Questions? Contact us at support@evertask.app
+📄 Terms of Service: https://evertask.app/terms
+🔒 Privacy Policy: https://evertask.app/privacy

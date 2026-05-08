@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Permissions -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Features -->
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+
+    <application
+        android:name="com.evertasktools.EverTaskApplication"
+        android:allowBackup="false"
+        tools:replace="android:allowBackup"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.EverTask"
+        tools:targetApi="34">
+
+        <!-- Main Activity -->
+        <activity
+            android:name="com.evertasktools.ui.MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:showWhenLocked="true"
+            android:theme="@style/Theme.EverTask"
+            android:windowSoftInputMode="adjustResize">
+            
+            <!-- Launcher Intent -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            
+            <!-- Deep Link Intents -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="evertask" android:host="create" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="evertask" android:host="read" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="evertask" android:host="complete" />
+            </intent-filter>
+            
+            <!-- App Actions Intent -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="evertask.app" />
+            </intent-filter>
+        </activity>
+
+        <!-- Voice Command Receiver -->
+        <receiver
+            android:name="com.evertasktools.receiver.VoiceCommandReceiver"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_STICKY">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <data android:scheme="evertask" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Boot Receiver for notifications -->
+        <receiver
+            android:name="com.evertasktools.receiver.BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Task Reminder Receiver -->
+        <receiver
+            android:name="com.evertasktools.receiver.TaskReminderReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
+
+        <!-- Glance App Widget Receiver -->
+        <receiver
+            android:name="com.evertasktools.widget.TaskWidgetReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/task_widget_info" />
+        </receiver>
+
+        <!-- Glance App Widget Configuration Activity -->
+        <activity
+            android:name="com.evertasktools.widget.TaskWidgetConfigurationActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+        <!-- Services -->
+        <service
+            android:name="com.evertasktools.service.VoiceRecognitionService"
+            android:exported="false" />
+        <service
+            android:name="com.evertasktools.service.TaskSyncService"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="true" />
+
+        <!-- App Actions Metadata -->
+        <meta-data
+            android:name="com.google.android.actions"
+            android:resource="@xml/actions" />
+
+        <!-- Firebase Metadata -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="@string/default_notification_channel_id" />
+
+
+        <!--
+            Security: Cloud backup is explicitly disabled.
+            Ever Task Tools follows a privacy-first, offline-only design.
+            All user data remains on-device with encrypted local backups only.
+        -->
+
+    </application>
+
+</manifest>

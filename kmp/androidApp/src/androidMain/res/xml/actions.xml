@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<actions>
+    <!-- Create a new task -->
+    <action intentName="actions.intent.CREATE_TASK">
+        <fulfillment urlTemplate="evertask://create{?title}">
+            <parameter-mapping
+                intentParameter="task.name"
+                urlParameter="title" />
+        </fulfillment>
+    </action>
+
+    <!-- Read / listen to tasks -->
+    <action intentName="actions.intent.GET_THING">
+        <fulfillment urlTemplate="evertask://read" />
+    </action>
+
+    <!-- Mark task or subtask as complete -->
+    <action intentName="actions.intent.UPDATE_TASK">
+        <fulfillment urlTemplate="evertask://complete{?item}">
+            <parameter-mapping
+                intentParameter="task.name"
+                urlParameter="item" />
+        </fulfillment>
+    </action>
+
+    <!-- Open app feature (fallback for unsupported intents) -->
+    <action intentName="actions.intent.OPEN_APP_FEATURE">
+        <fulfillment urlTemplate="evertask://open" />
+    </action>
+</actions>

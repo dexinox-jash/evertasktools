@@ -1,0 +1,944 @@
+package com.evertask.shared.data.repository
+
+import android.content.Context
+import com.evertask.shared.domain.model.TaskTemplate
+import com.evertask.shared.domain.model.TemplateSubtask
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+
+class AndroidTemplateEngine(context: Context) : TemplateEngine {
+
+    private val json = Json { ignoreUnknownKeys = true }
+    private val templates: List<TaskTemplate>
+    private val defaultTemplate: TaskTemplate
+
+    init {
+        val jsonString = loadTemplates(context)
+        val collection = json.decodeFromString<TemplateCollection>(jsonString)
+        templates = collection.templates.map { dto ->
+            TaskTemplate(
+                id = dto.id,
+                name = dto.id.replace("_", " ").replaceFirstChar { it.uppercase() },
+                keywords = dto.keywords,
+                subtasks = dto.subtasks.map { parseSubtask(it) },
+                icon = dto.icon,
+                isSystem = true
+            )
+        }
+        defaultTemplate = TaskTemplate(
+            id = "default_template",
+            name = "Generic Task",
+            keywords = emptyList(),
+            subtasks = collection.defaultTemplate.subtasks.map { parseSubtask(it) },
+            icon = collection.defaultTemplate.icon,
+            isSystem = true
+        )
+    }
+
+    override fun findTemplate(input: String): TaskTemplate {
+        val normalized = expandSynonyms(input.lowercase().trim())
+
+        // 1. Exact phrase match
+        findExactPhraseMatch(normalized)?.let { return it }
+
+        // 2. Keyword density scoring (threshold 25%, soft fallback to 10%)
+        findHighestDensityMatch(normalized)?.let { return it }
+
+        // 3. Wildcard fallback
+        return defaultTemplate
+    }
+
+    override fun getDefaultTemplates(): List<TaskTemplate> = templates
+
+    private fun expandSynonyms(input: String): String {
+        var expanded = input
+        expanded = expanded.replace(Regex("\\bwash clothes\\b"), "laundry")
+        expanded = expanded.replace(Regex("\\bwashing\\b"), "laundry")
+        expanded = expanded.replace(Regex("\\btidy up\\b"), "clean")
+        expanded = expanded.replace(Regex("\\btidying\\b"), "clean")
+        expanded = expanded.replace(Regex("\\bexercise\\b"), "workout")
+        expanded = expanded.replace(Regex("\\bworking out\\b"), "workout")
+        expanded = expanded.replace(Regex("\\bbuy food\\b"), "grocery")
+        expanded = expanded.replace(Regex("\\bfood shopping\\b"), "grocery")
+        expanded = expanded.replace(Regex("\\bsend mail\\b"), "email")
+        expanded = expanded.replace(Regex("\\bprepare food\\b"), "cook")
+        expanded = expanded.replace(Regex("\\bwrite essay\\b"), "write report")
+        expanded = expanded.replace(Regex("\\bwrite article\\b"), "write report")
+        expanded = expanded.replace(Regex("\\bfix code\\b"), "code review")
+        return expanded
+    }
+
+    private fun findExactPhraseMatch(title: String): TaskTemplate? {
+        return templates.firstOrNull { template ->
+            template.keywords.any { keyword ->
+                if (keyword.contains(" ")) {
+                    title.contains(keyword.lowercase())
+                } else {
+                    val wordRegex = "\\b${Regex.escape(keyword.lowercase())}\\b".toRegex()
+                    wordRegex.containsMatchIn(title)
+                }
+            }
+        }
+    }
+
+    private fun findHighestDensityMatch(title: String): TaskTemplate? {
+        val words = title.split(WORD_DELIMITER).filter { it.length > 2 }
+        val scored = templates.map { template ->
+            var matchedCount = template.keywords.count { keyword ->
+                words.any { word ->
+                    word == keyword.lowercase() ||
+                    word.contains(keyword.lowercase()) ||
+                    keyword.lowercase().contains(word)
+                }
+            }
+
+            // Category boosting
+            if (words.any { it in FINANCE_BOOST_WORDS }) {
+                if (template.id in FINANCE_TEMPLATE_IDS) {
+                    matchedCount += 1
+                }
+            }
+            if (words.any { it in HEALTH_BOOST_WORDS }) {
+                if (template.id in HEALTH_TEMPLATE_IDS) {
+                    matchedCount += 1
+                }
+            }
+
+            val score = (matchedCount * 100) / template.keywords.size.coerceAtLeast(1)
+            template to score
+        }.maxByOrNull { it.second }
+
+        return scored?.takeIf { it.second >= MINIMUM_MATCH_THRESHOLD || it.second >= SOFT_MATCH_THRESHOLD }?.first
+    }
+
+    private fun loadTemplates(context: Context): String {
+        return runCatching {
+            context.assets.open(ASSET_PATH).use { stream ->
+                stream.bufferedReader().readText()
+            }
+        }.getOrDefault(FALLBACK_JSON)
+    }
+
+    private fun parseSubtask(templateString: String): TemplateSubtask {
+        val regex = """\((\d+)\s*min\)""".toRegex()
+        val match = regex.find(templateString)
+        val duration = match?.groupValues?.get(1)?.toIntOrNull() ?: 0
+        val text = templateString.replace(regex, "").trim()
+        return TemplateSubtask(text = text, durationMinutes = duration)
+    }
+
+    @Serializable
+    private data class TemplateCollection(
+        val templates: List<TemplateDto>,
+        @SerialName("default_template") val defaultTemplate: DefaultTemplateDto
+    )
+
+    @Serializable
+    private data class TemplateDto(
+        val id: String,
+        val keywords: List<String>,
+        val subtasks: List<String>,
+        val icon: String
+    )
+
+    @Serializable
+    private data class DefaultTemplateDto(
+        val subtasks: List<String>,
+        val icon: String
+    )
+
+    companion object {
+        private const val ASSET_PATH = "templates.json"
+        private const val MINIMUM_MATCH_THRESHOLD = 25
+        private const val SOFT_MATCH_THRESHOLD = 10
+        private val WORD_DELIMITER = Regex("[\\s\\p{Punct}]+")
+
+        private val FINANCE_BOOST_WORDS = setOf("bill", "tax", "budget", "money", "invest")
+        private val HEALTH_BOOST_WORDS = setOf("doctor", "health", "gym", "run", "meditate")
+
+        private val FINANCE_TEMPLATE_IDS = setOf(
+            "pay_bills", "file_taxes", "review_budget", "invest_money",
+            "cancel_subscription", "track_expenses", "build_emergency_fund", "check_credit_score"
+        )
+        private val HEALTH_TEMPLATE_IDS = setOf(
+            "meditate", "yoga_session", "drink_water_goal", "schedule_doctor_appointment",
+            "meal_prep", "go_for_run", "take_vitamins", "stretch_routine", "get_eight_hours_sleep"
+        )
+
+        private const val FALLBACK_JSON = """
+        {
+          "templates": [
+            {
+              "id": "clean_room",
+              "keywords": ["clean", "tidy", "room", "house", "apartment", "bedroom", "organize"],
+              "subtasks": [
+                "Clear trash & clutter (2 min)",
+                "Dust visible surfaces (3 min)",
+                "Vacuum or sweep floors (5 min)",
+                "Arrange cushions & items (2 min)"
+              ],
+              "icon": "sparkles"
+            },
+            {
+              "id": "do_laundry",
+              "keywords": ["laundry", "wash", "clothes", "folding", "washer", "dryer", "detergent"],
+              "subtasks": [
+                "Sort clothes by color & material (3 min)",
+                "Load washer with detergent (2 min)",
+                "Transfer to dryer or hang (2 min)",
+                "Fold and put away (10 min)"
+              ],
+              "icon": "washer"
+            },
+            {
+              "id": "wash_dishes",
+              "keywords": ["dishes", "wash", "kitchen", "sink", "plates", "cleanup", "dishwasher"],
+              "subtasks": [
+                "Scrape leftover food (2 min)",
+                "Rinse and load dishwasher (5 min)",
+                "Hand wash fragile items (5 min)",
+                "Wipe sink and counters (3 min)"
+              ],
+              "icon": "drop"
+            },
+            {
+              "id": "organize_closet",
+              "keywords": ["closet", "wardrobe", "organize", "clothes", "declutter", "hangers", "storage"],
+              "subtasks": [
+                "Remove everything from closet (5 min)",
+                "Sort keep, donate, discard piles (10 min)",
+                "Wipe shelves and rods (3 min)",
+                "Return organized items (10 min)"
+              ],
+              "icon": "cabinet"
+            },
+            {
+              "id": "clean_bathroom",
+              "keywords": ["bathroom", "toilet", "shower", "sink", "sanitize", "mop", "mirror"],
+              "subtasks": [
+                "Spray cleaner on toilet & shower (2 min)",
+                "Scrub toilet bowl and seat (3 min)",
+                "Wipe shower walls and sink (5 min)",
+                "Mop floor and clean mirror (5 min)"
+              ],
+              "icon": "sparkles"
+            },
+            {
+              "id": "garden_yard_work",
+              "keywords": ["garden", "yard", "lawn", "plants", "mow", "weed", "outdoor"],
+              "subtasks": [
+                "Inspect yard and garden (5 min)",
+                "Mow lawn or trim edges (20 min)",
+                "Pull weeds and rake debris (15 min)",
+                "Water plants and tidy tools (5 min)"
+              ],
+              "icon": "leaf"
+            },
+            {
+              "id": "fix_leaky_faucet",
+              "keywords": ["faucet", "leak", "plumbing", "repair", "sink", "drip", "tools"],
+              "subtasks": [
+                "Turn off water supply (2 min)",
+                "Inspect faucet and washers (5 min)",
+                "Replace worn parts (10 min)",
+                "Turn water on and test (3 min)"
+              ],
+              "icon": "wrench"
+            },
+            {
+              "id": "change_bedsheets",
+              "keywords": ["bed", "sheets", "bedroom", "pillows", "linens", "laundry", "make"],
+              "subtasks": [
+                "Strip old sheets and pillowcases (3 min)",
+                "Put on fitted sheet (3 min)",
+                "Add flat sheet and duvet (4 min)",
+                "Arrange pillows and tidy bed (2 min)"
+              ],
+              "icon": "bed.double"
+            },
+            {
+              "id": "vacuum_house",
+              "keywords": ["vacuum", "floors", "clean", "carpet", "house", "dust", "tidy"],
+              "subtasks": [
+                "Clear floors of small items (5 min)",
+                "Vacuum living room & bedrooms (15 min)",
+                "Vacuum stairs and hallways (10 min)",
+                "Empty vacuum canister (2 min)"
+              ],
+              "icon": "house"
+            },
+            {
+              "id": "take_out_trash",
+              "keywords": ["trash", "garbage", "bins", "recycling", "waste", "remove", "dispose"],
+              "subtasks": [
+                "Gather trash bags from rooms (5 min)",
+                "Replace liners in bins (3 min)",
+                "Carry bins to curb or dumpster (5 min)",
+                "Sort recycling if needed (3 min)"
+              ],
+              "icon": "trash"
+            },
+            {
+              "id": "meditate",
+              "keywords": ["meditate", "mindfulness", "breathing", "calm", "relax", "focus", "mental"],
+              "subtasks": [
+                "Find a quiet space (2 min)",
+                "Set a timer (1 min)",
+                "Close eyes and breathe deeply (10 min)",
+                "Gently return to awareness (2 min)"
+              ],
+              "icon": "wind"
+            },
+            {
+              "id": "yoga_session",
+              "keywords": ["yoga", "stretch", "flexibility", "poses", "mat", "balance", "wellness"],
+              "subtasks": [
+                "Roll out mat and set space (2 min)",
+                "Warm up with gentle stretches (5 min)",
+                "Flow through poses (20 min)",
+                "Cool down in savasana (5 min)"
+              ],
+              "icon": "figure.mind.and.body"
+            },
+            {
+              "id": "drink_water_goal",
+              "keywords": ["water", "hydrate", "drink", "health", "bottle", "fluids", "goal"],
+              "subtasks": [
+                "Fill a large water bottle (1 min)",
+                "Set hourly reminders (2 min)",
+                "Track intake with app or journal (2 min)",
+                "Refinish goal by evening (5 min)"
+              ],
+              "icon": "drop.fill"
+            },
+            {
+              "id": "schedule_doctor_appointment",
+              "keywords": ["doctor", "appointment", "health", "clinic", "schedule", "checkup", "medical"],
+              "subtasks": [
+                "Find clinic phone or portal (2 min)",
+                "Check calendar for availability (3 min)",
+                "Call or book online (5 min)",
+                "Add appointment to calendar (1 min)"
+              ],
+              "icon": "cross.case"
+            },
+            {
+              "id": "meal_prep",
+              "keywords": ["meal", "prep", "cook", "food", "containers", "plan", "healthy"],
+              "subtasks": [
+                "Choose recipes for the week (5 min)",
+                "Shop for ingredients (20 min)",
+                "Wash and chop vegetables (15 min)",
+                "Cook and portion into containers (20 min)"
+              ],
+              "icon": "fork.knife"
+            },
+            {
+              "id": "go_for_run",
+              "keywords": ["run", "jog", "cardio", "outdoor", "fitness", "trail", "exercise"],
+              "subtasks": [
+                "Change into running gear (3 min)",
+                "Warm up with dynamic stretches (5 min)",
+                "Run planned route (25 min)",
+                "Cool down and hydrate (5 min)"
+              ],
+              "icon": "figure.run"
+            },
+            {
+              "id": "take_vitamins",
+              "keywords": ["vitamins", "supplements", "health", "pills", "daily", "routine", "wellness"],
+              "subtasks": [
+                "Read labels for dosage (2 min)",
+                "Take morning supplements (1 min)",
+                "Set reminder for evening dose (1 min)",
+                "Log intake in health app (1 min)"
+              ],
+              "icon": "pills"
+            },
+            {
+              "id": "stretch_routine",
+              "keywords": ["stretch", "flexibility", "mobility", "muscles", "warmup", "recovery", "routine"],
+              "subtasks": [
+                "Stand and roll shoulders (2 min)",
+                "Stretch hamstrings and quads (5 min)",
+                "Open hips and lower back (5 min)",
+                "Deep breathing to finish (3 min)"
+              ],
+              "icon": "figure.walk"
+            },
+            {
+              "id": "get_eight_hours_sleep",
+              "keywords": ["sleep", "rest", "bedtime", "night", "tired", "recover", "schedule"],
+              "subtasks": [
+                "Set a bedtime alarm (1 min)",
+                "Dim lights and reduce screens (15 min)",
+                "Wind down with reading or music (15 min)",
+                "Lie down and relax (5 min)"
+              ],
+              "icon": "moon"
+            },
+            {
+              "id": "write_report",
+              "keywords": ["report", "write", "document", "analysis", "summary", "work", "data"],
+              "subtasks": [
+                "Gather data and sources (5 min)",
+                "Outline sections and key points (5 min)",
+                "Draft the body content (20 min)",
+                "Edit and format final version (10 min)"
+              ],
+              "icon": "doc.text"
+            },
+            {
+              "id": "code_review",
+              "keywords": ["code", "review", "pull", "request", "github", "bugs", "developer"],
+              "subtasks": [
+                "Read PR description and scope (3 min)",
+                "Review changes line by line (15 min)",
+                "Run tests locally (10 min)",
+                "Leave constructive comments (5 min)"
+              ],
+              "icon": "chevron.left.forwardslash.chevron.right"
+            },
+            {
+              "id": "prepare_presentation",
+              "keywords": ["presentation", "slides", "pitch", "deck", "meeting", "speak", "demo"],
+              "subtasks": [
+                "Define audience and objective (3 min)",
+                "Draft slide outline (5 min)",
+                "Design slides with visuals (20 min)",
+                "Rehearse timing and notes (10 min)"
+              ],
+              "icon": "person.wave.2"
+            },
+            {
+              "id": "update_resume",
+              "keywords": ["resume", "cv", "job", "career", "update", "skills", "portfolio"],
+              "subtasks": [
+                "Review current resume (5 min)",
+                "Add recent experience & skills (10 min)",
+                "Tailor to target role (10 min)",
+                "Proofread and save as PDF (5 min)"
+              ],
+              "icon": "doc.plaintext"
+            },
+            {
+              "id": "apply_for_job",
+              "keywords": ["job", "apply", "career", "hiring", "cover", "letter", "interview"],
+              "subtasks": [
+                "Research company and role (10 min)",
+                "Tailor resume and cover letter (15 min)",
+                "Fill out application form (10 min)",
+                "Submit and track in spreadsheet (5 min)"
+              ],
+              "icon": "briefcase"
+            },
+            {
+              "id": "reply_to_emails",
+              "keywords": ["email", "inbox", "reply", "message", "correspondence", "work", "communication"],
+              "subtasks": [
+                "Skim inbox and flag urgent (3 min)",
+                "Draft quick replies (10 min)",
+                "Write detailed responses (15 min)",
+                "Archive or organize sent items (2 min)"
+              ],
+              "icon": "envelope"
+            },
+            {
+              "id": "attend_standup_meeting",
+              "keywords": ["standup", "meeting", "scrum", "team", "daily", "sync", "update"],
+              "subtasks": [
+                "Prepare 3 bullet updates (3 min)",
+                "Join call on time (0 min)",
+                "Share progress and blockers (5 min)",
+                "Note action items (2 min)"
+              ],
+              "icon": "person.2"
+            },
+            {
+              "id": "research_project",
+              "keywords": ["research", "project", "investigate", "study", "data", "analysis", "learn"],
+              "subtasks": [
+                "Define research question (5 min)",
+                "Search sources and articles (15 min)",
+                "Take notes and summarize findings (15 min)",
+                "Outline next steps (5 min)"
+              ],
+              "icon": "magnifyingglass"
+            },
+            {
+              "id": "network_on_linkedin",
+              "keywords": ["linkedin", "network", "career", "connect", "professional", "profile", "message"],
+              "subtasks": [
+                "Update profile headline (5 min)",
+                "Identify 5 people to connect with (5 min)",
+                "Send personalized invites (10 min)",
+                "Engage with posts or articles (5 min)"
+              ],
+              "icon": "network"
+            },
+            {
+              "id": "request_time_off",
+              "keywords": ["time", "off", "vacation", "pto", "request", "leave", "manager"],
+              "subtasks": [
+                "Check PTO balance (2 min)",
+                "Draft request email or form (5 min)",
+                "Plan handover notes (5 min)",
+                "Send to manager and calendar block (3 min)"
+              ],
+              "icon": "calendar"
+            },
+            {
+              "id": "pay_bills",
+              "keywords": ["bills", "pay", "payment", "utilities", "rent", "due", "finance"],
+              "subtasks": [
+                "Gather all due bills (3 min)",
+                "Log into bank or app (2 min)",
+                "Schedule or submit payments (10 min)",
+                "Confirm receipts and update budget (5 min)"
+              ],
+              "icon": "creditcard"
+            },
+            {
+              "id": "file_taxes",
+              "keywords": ["taxes", "file", "irs", "refund", "documents", "return", "accountant"],
+              "subtasks": [
+                "Collect W-2s and documents (10 min)",
+                "Log into tax software (3 min)",
+                "Enter income and deductions (30 min)",
+                "Review and submit filing (10 min)"
+              ],
+              "icon": "doc.text.magnifyingglass"
+            },
+            {
+              "id": "review_budget",
+              "keywords": ["budget", "review", "spending", "savings", "finance", "money", "plan"],
+              "subtasks": [
+                "Export recent transactions (5 min)",
+                "Categorize expenses (10 min)",
+                "Compare to budget goals (10 min)",
+                "Adjust categories for next month (5 min)"
+              ],
+              "icon": "chart.pie"
+            },
+            {
+              "id": "invest_money",
+              "keywords": ["invest", "stocks", "portfolio", "finance", "retirement", "broker", "etf"],
+              "subtasks": [
+                "Review account balances (3 min)",
+                "Research assets or funds (15 min)",
+                "Decide allocation and amount (5 min)",
+                "Place buy order and confirm (2 min)"
+              ],
+              "icon": "chart.line.uptrend.xyaxis"
+            },
+            {
+              "id": "cancel_subscription",
+              "keywords": ["cancel", "subscription", "membership", "billing", "streaming", "service", "save"],
+              "subtasks": [
+                "List active subscriptions (5 min)",
+                "Identify ones to cancel (3 min)",
+                "Navigate to cancellation page (5 min)",
+                "Confirm cancellation and save proof (2 min)"
+              ],
+              "icon": "xmark.circle"
+            },
+            {
+              "id": "track_expenses",
+              "keywords": ["expenses", "track", "spending", "receipts", "budget", "finance", "log"],
+              "subtasks": [
+                "Gather receipts and statements (5 min)",
+                "Enter transactions into app (10 min)",
+                "Tag and categorize each item (5 min)",
+                "Review weekly spending trends (5 min)"
+              ],
+              "icon": "list.bullet.rectangle"
+            },
+            {
+              "id": "build_emergency_fund",
+              "keywords": ["emergency", "fund", "savings", "money", "finance", "buffer", "security"],
+              "subtasks": [
+                "Calculate monthly essential costs (10 min)",
+                "Set savings target amount (5 min)",
+                "Automate monthly transfer (5 min)",
+                "Monitor progress quarterly (5 min)"
+              ],
+              "icon": "banknote"
+            },
+            {
+              "id": "check_credit_score",
+              "keywords": ["credit", "score", "report", "finance", "debt", "rating", "monitor"],
+              "subtasks": [
+                "Log into credit monitoring service (2 min)",
+                "Review score and changes (5 min)",
+                "Check for errors or alerts (3 min)",
+                "Set up monthly monitoring reminder (2 min)"
+              ],
+              "icon": "creditcard.and.123"
+            },
+            {
+              "id": "plan_birthday_party",
+              "keywords": ["birthday", "party", "plan", "celebrate", "guests", "invites", "event"],
+              "subtasks": [
+                "Pick date and venue (10 min)",
+                "Draft guest list (5 min)",
+                "Send invites and track RSVPs (10 min)",
+                "Plan food, cake, and decorations (15 min)"
+              ],
+              "icon": "gift"
+            },
+            {
+              "id": "buy_gift",
+              "keywords": ["gift", "present", "buy", "shopping", "birthday", "special", "surprise"],
+              "subtasks": [
+                "Set a budget (2 min)",
+                "Brainstorm ideas based on interests (5 min)",
+                "Compare options online or in store (15 min)",
+                "Purchase and wrap or ship (10 min)"
+              ],
+              "icon": "bag"
+            },
+            {
+              "id": "call_mom_dad",
+              "keywords": ["call", "mom", "dad", "parents", "family", "phone", "catchup"],
+              "subtasks": [
+                "Check their availability (2 min)",
+                "Find a quiet spot (1 min)",
+                "Make the call (20 min)",
+                "Schedule next call before hanging up (2 min)"
+              ],
+              "icon": "phone"
+            },
+            {
+              "id": "date_night",
+              "keywords": ["date", "night", "romance", "partner", "dinner", "plan", "relationship"],
+              "subtasks": [
+                "Discuss preferences with partner (5 min)",
+                "Book restaurant or activity (10 min)",
+                "Get ready and dress up (20 min)",
+                "Enjoy the evening and disconnect (3 min)"
+              ],
+              "icon": "heart"
+            },
+            {
+              "id": "attend_wedding",
+              "keywords": ["wedding", "attend", "ceremony", "rsvp", "guest", "travel", "formal"],
+              "subtasks": [
+                "Confirm RSVP and hotel (5 min)",
+                "Plan outfit and gift (10 min)",
+                "Arrange transportation (10 min)",
+                "Attend ceremony and reception (4 hr)"
+              ],
+              "icon": "ring"
+            },
+            {
+              "id": "host_dinner",
+              "keywords": ["host", "dinner", "guests", "cook", "party", "table", "entertain"],
+              "subtasks": [
+                "Plan menu and dietary needs (10 min)",
+                "Shop for ingredients and drinks (20 min)",
+                "Prep and cook dishes (30 min)",
+                "Set table and welcome guests (10 min)"
+              ],
+              "icon": "wineglass"
+            },
+            {
+              "id": "write_thank_you_note",
+              "keywords": ["thank", "note", "gratitude", "card", "appreciation", "handwritten", "polite"],
+              "subtasks": [
+                "Choose a card or paper (2 min)",
+                "Mention the gift or act specifically (5 min)",
+                "Express how it helped or made you feel (5 min)",
+                "Sign, address, and mail (3 min)"
+              ],
+              "icon": "envelope.open"
+            },
+            {
+              "id": "apologize_to_someone",
+              "keywords": ["apologize", "sorry", "relationship", "conflict", "makeup", "conversation", "heal"],
+              "subtasks": [
+                "Reflect on what happened (5 min)",
+                "Draft what you want to say (5 min)",
+                "Choose a calm moment to talk (2 min)",
+                "Listen and acknowledge their feelings (10 min)"
+              ],
+              "icon": "hand.raised"
+            },
+            {
+              "id": "read_book_chapter",
+              "keywords": ["read", "book", "chapter", "learn", "literature", "study", "focus"],
+              "subtasks": [
+                "Find a quiet reading spot (2 min)",
+                "Put away distractions (1 min)",
+                "Read one full chapter (20 min)",
+                "Reflect or jot a quick summary (5 min)"
+              ],
+              "icon": "book.closed"
+            },
+            {
+              "id": "learn_language",
+              "keywords": ["language", "learn", "vocabulary", "grammar", "practice", "fluency", "app"],
+              "subtasks": [
+                "Open language app or book (1 min)",
+                "Review flashcards (10 min)",
+                "Complete a lesson module (10 min)",
+                "Practice speaking aloud (5 min)"
+              ],
+              "icon": "character.book.closed"
+            },
+            {
+              "id": "practice_instrument",
+              "keywords": ["instrument", "music", "practice", "guitar", "piano", "rehearse", "skill"],
+              "subtasks": [
+                "Tune instrument and set sheet music (3 min)",
+                "Play scales or warmups (5 min)",
+                "Practice target piece (20 min)",
+                "Record and review progress (5 min)"
+              ],
+              "icon": "music.note"
+            },
+            {
+              "id": "complete_online_course",
+              "keywords": ["course", "online", "elearning", "certification", "module", "video", "skill"],
+              "subtasks": [
+                "Log into learning platform (1 min)",
+                "Watch lecture or read material (20 min)",
+                "Complete quiz or assignment (15 min)",
+                "Take notes on key takeaways (5 min)"
+              ],
+              "icon": "graduationcap"
+            },
+            {
+              "id": "watch_educational_video",
+              "keywords": ["video", "educational", "documentary", "tutorial", "youtube", "learn", "watch"],
+              "subtasks": [
+                "Search for a relevant topic (5 min)",
+                "Watch video with focus (20 min)",
+                "Pause to look up unclear terms (5 min)",
+                "Summarize main points in notes (5 min)"
+              ],
+              "icon": "play.rectangle"
+            },
+            {
+              "id": "take_notes_on_podcast",
+              "keywords": ["podcast", "notes", "listen", "audio", "learn", "summary", "ideas"],
+              "subtasks": [
+                "Choose an episode and open notes app (2 min)",
+                "Listen actively and pause to jot ideas (25 min)",
+                "Organize notes into themes (5 min)",
+                "Identify one action item (3 min)"
+              ],
+              "icon": "headphones"
+            },
+            {
+              "id": "book_flight",
+              "keywords": ["flight", "book", "travel", "airplane", "ticket", "airline", "trip"],
+              "subtasks": [
+                "Compare prices on search engines (10 min)",
+                "Check baggage and cancellation policies (5 min)",
+                "Enter passenger details (5 min)",
+                "Confirm booking and save itinerary (3 min)"
+              ],
+              "icon": "airplane"
+            },
+            {
+              "id": "plan_itinerary",
+              "keywords": ["itinerary", "plan", "travel", "schedule", "sightseeing", "activities", "route"],
+              "subtasks": [
+                "Research top attractions (15 min)",
+                "Map locations by day (10 min)",
+                "Book tickets for must-see spots (10 min)",
+                "Share itinerary with travel companions (5 min)"
+              ],
+              "icon": "map"
+            },
+            {
+              "id": "get_visa",
+              "keywords": ["visa", "passport", "travel", "embassy", "application", "documents", "international"],
+              "subtasks": [
+                "Check visa requirements for destination (5 min)",
+                "Gather passport photos and documents (10 min)",
+                "Fill out application form (15 min)",
+                "Submit and track processing status (5 min)"
+              ],
+              "icon": "doc.text"
+            },
+            {
+              "id": "rent_car",
+              "keywords": ["rent", "car", "vehicle", "travel", "driving", "rental", "reservation"],
+              "subtasks": [
+                "Compare rental companies online (10 min)",
+                "Select car size and insurance (5 min)",
+                "Enter driver details and pay (5 min)",
+                "Confirm pickup location and time (2 min)"
+              ],
+              "icon": "car"
+            },
+            {
+              "id": "pack_suitcase",
+              "keywords": ["pack", "suitcase", "travel", "luggage", "clothes", "trip", "organize"],
+              "subtasks": [
+                "Check weather forecast (1 min)",
+                "List clothes by day (5 min)",
+                "Pack toiletries and chargers (5 min)",
+                "Roll clothes to save space (10 min)"
+              ],
+              "icon": "suitcase"
+            },
+            {
+              "id": "check_in_online",
+              "keywords": ["check", "in", "online", "flight", "boarding", "pass", "airline", "travel"],
+              "subtasks": [
+                "Open airline app or website (2 min)",
+                "Enter booking reference (1 min)",
+                "Select seat and confirm details (3 min)",
+                "Download or print boarding pass (2 min)"
+              ],
+              "icon": "ticket"
+            },
+            {
+              "id": "write_blog_post",
+              "keywords": ["blog", "write", "post", "article", "content", "publish", "creative"],
+              "subtasks": [
+                "Pick topic and headline (5 min)",
+                "Outline key points (5 min)",
+                "Write draft body (25 min)",
+                "Edit and add images or links (10 min)"
+              ],
+              "icon": "text.quote"
+            },
+            {
+              "id": "edit_video",
+              "keywords": ["video", "edit", "footage", "clips", "creative", "youtube", "timeline"],
+              "subtasks": [
+                "Import footage and organize bins (5 min)",
+                "Cut and arrange clips on timeline (20 min)",
+                "Add music and transitions (10 min)",
+                "Color correct and export (10 min)"
+              ],
+              "icon": "film"
+            },
+            {
+              "id": "draw_or_paint",
+              "keywords": ["draw", "paint", "art", "sketch", "creative", "canvas", "illustrate"],
+              "subtasks": [
+                "Set up supplies and workspace (5 min)",
+                "Choose subject or reference (3 min)",
+                "Sketch initial composition (10 min)",
+                "Add color and details (25 min)"
+              ],
+              "icon": "paintbrush"
+            },
+            {
+              "id": "record_podcast",
+              "keywords": ["podcast", "record", "audio", "microphone", "interview", "episode", "creative"],
+              "subtasks": [
+                "Test mic and recording levels (3 min)",
+                "Review questions or script (5 min)",
+                "Record main content (25 min)",
+                "Save raw files and backup (2 min)"
+              ],
+              "icon": "mic"
+            },
+            {
+              "id": "take_photos",
+              "keywords": ["photo", "camera", "shoot", "picture", "creative", "photography", "session"],
+              "subtasks": [
+                "Charge camera and pack gear (5 min)",
+                "Scout location and lighting (10 min)",
+                "Take a variety of shots (20 min)",
+                "Review and flag best images (5 min)"
+              ],
+              "icon": "camera"
+            },
+            {
+              "id": "brainstorm_ideas",
+              "keywords": ["brainstorm", "ideas", "creative", "mindmap", "innovation", "concepts", "solve"],
+              "subtasks": [
+                "Define the problem or goal (3 min)",
+                "Set a timer and write freely (10 min)",
+                "Cluster similar ideas together (5 min)",
+                "Pick top 3 to explore further (5 min)"
+              ],
+              "icon": "lightbulb"
+            },
+            {
+              "id": "return_package",
+              "keywords": ["return", "package", "refund", "shipping", "label", "parcel", "store"],
+              "subtasks": [
+                "Find receipt and check return policy (3 min)",
+                "Repack item with original tags (5 min)",
+                "Print or request return label (3 min)",
+                "Drop off at carrier or store (10 min)"
+              ],
+              "icon": "arrow.counterclockwise"
+            },
+            {
+              "id": "renew_license",
+              "keywords": ["license", "renew", "dmv", "id", "document", "government", "official"],
+              "subtasks": [
+                "Check expiration date and requirements (3 min)",
+                "Gather forms and ID documents (5 min)",
+                "Complete online or in-person renewal (15 min)",
+                "Save new license and update records (2 min)"
+              ],
+              "icon": "doc.badge"
+            },
+            {
+              "id": "car_wash",
+              "keywords": ["car", "wash", "clean", "vehicle", "detailing", "soap", "shine"],
+              "subtasks": [
+                "Rinse car with water (5 min)",
+                "Wash with soap and sponge (10 min)",
+                "Rinse and dry with towels (10 min)",
+                "Clean windows and tires (5 min)"
+              ],
+              "icon": "car.fill"
+            },
+            {
+              "id": "oil_change",
+              "keywords": ["oil", "change", "car", "maintenance", "mechanic", "service", "engine"],
+              "subtasks": [
+                "Check oil level and type (2 min)",
+                "Gather tools and new oil (5 min)",
+                "Drain old oil and replace filter (15 min)",
+                "Refill oil and dispose of old oil (5 min)"
+              ],
+              "icon": "gearshape"
+            },
+            {
+              "id": "go_to_post_office",
+              "keywords": ["post", "office", "mail", "package", "stamp", "letter", "ship"],
+              "subtasks": [
+                "Prepare mail or packages (5 min)",
+                "Check postage and address labels (2 min)",
+                "Travel to post office (10 min)",
+                "Queue and send items (10 min)"
+              ],
+              "icon": "envelope"
+            },
+            {
+              "id": "visit_bank",
+              "keywords": ["bank", "deposit", "cash", "account", "withdraw", "branch", "errand"],
+              "subtasks": [
+                "Gather checks or cash and ID (3 min)",
+                "Fill out deposit or withdrawal slip (2 min)",
+                "Travel to bank branch (10 min)",
+                "Complete transaction with teller (10 min)"
+              ],
+              "icon": "building.columns"
+            }
+          ],
+          "default_template": {
+            "subtasks": [
+              "Clarify what '[goal]' means (2 min)",
+              "Identify first small step (3 min)",
+              "Take action on '[goal]' (20 min)",
+              "Review progress and next step (3 min)"
+            ],
+            "icon": "checkmark.circle"
+          }
+        }
+        """
+    }
+}

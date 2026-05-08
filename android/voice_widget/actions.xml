@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Ever Task Tools - App Actions Configuration
+  
+  This file defines voice intents that Google Assistant can route to our app.
+  Place this file in: res/xml/actions.xml
+  
+  Supported Voice Phrases:
+  - "Hey Google, add 'clean garage' to Ever Task"
+  - "Hey Google, create a task in Ever Task"
+  - "Hey Google, show my tasks in Ever Task"
+  - "Hey Google, complete garage cleaning in Ever Task"
+  - "Hey Google, mark garage cleaning as done in Ever Task"
+-->
+<actions>
+    
+    <!-- 
+      CREATE_TODO: Create a new task with optional title
+      Voice phrases:
+      - "Add [task name] to Ever Task"
+      - "Create a task in Ever Task"
+      - "Add a new task in Ever Task"
+    -->
+    <action intentName="actions.intent.CREATE_TODO">
+        <fulfillment 
+            urlTemplate="evertask://create{?title}" />
+        <parameter-mapping 
+            intentParameter="item.name" 
+            urlParameter="title" />
+        <!-- Fallback when no title provided -->
+        <fulfillment 
+            urlTemplate="evertask://create" />
+    </action>
+    
+    <!-- 
+      GET_THING: Read/display tasks
+      Voice phrases:
+      - "Show my tasks in Ever Task"
+      - "What tasks do I have in Ever Task"
+      - "Read my tasks from Ever Task"
+    -->
+    <action intentName="actions.intent.GET_THING">
+        <fulfillment 
+            urlTemplate="evertask://read" />
+        <parameter-mapping 
+            intentParameter="thing.name" 
+            entitySetReference="taskEntitySet" />
+    </action>
+    
+    <!-- 
+      UPDATE_TODO: Complete/update a task
+      Voice phrases:
+      - "Complete [task name] in Ever Task"
+      - "Mark [task name] as done in Ever Task"
+      - "Finish [task name] in Ever Task"
+    -->
+    <action intentName="actions.intent.UPDATE_TODO">
+        <fulfillment 
+            urlTemplate="evertask://complete{?item}" />
+        <parameter-mapping 
+            intentParameter="item.name" 
+            urlParameter="item" />
+    </action>
+    
+    <!-- 
+      DELETE_TODO: Delete a task
+      Voice phrases:
+      - "Delete [task name] from Ever Task"
+      - "Remove [task name] from Ever Task"
+    -->
+    <action intentName="actions.intent.DELETE_TODO">
+        <fulfillment 
+            urlTemplate="evertask://delete{?item}" />
+        <parameter-mapping 
+            intentParameter="item.name" 
+            urlParameter="item" />
+    </action>
+    
+    <!-- 
+      Entity set for task names - enables better recognition
+      of task-related queries
+    -->
+    <entity-set entitySetId="taskEntitySet">
+        <entity 
+            name="@string/entity_task" 
+            alternateName="@array/task_synonyms" />
+    </entity-set>
+    
+</actions>

@@ -1,0 +1,50 @@
+Reviewer Notes for EverTask
+
+App Name: EverTask
+Version: 1.0.0
+Package Name: com.evertask.app
+
+---
+
+What the app does:
+EverTask is a local-first productivity app that helps users break down tasks into manageable subtasks. Users can create tasks by voice or text, use smart templates, track progress, set reminders, and complete tasks via home-screen widgets.
+
+---
+
+Login / Accounts:
+No login or account is required. The app is fully functional offline without any registration.
+
+---
+
+Permissions used and why:
+- RECORD_AUDIO: Optional. Used only for voice task creation. Users can deny this permission and continue using the app with manual text input.
+- POST_NOTIFICATIONS: Optional. Used for local task reminders. Can be denied without breaking core functionality.
+- SCHEDULE_EXACT_ALARM: Optional. Used for precise reminder timing on Android 12+. Users are prompted to enable it in settings if they want reminders.
+- RECEIVE_BOOT_COMPLETED: Used solely to reschedule local reminders after a device reboot.
+- VIBRATE: Used for haptic feedback on button presses.
+
+---
+
+Monetization:
+This version is free with no in-app purchases and no advertisements.
+
+---
+
+Data handling:
+All data is stored locally on the user's device in a private SQLite database. No data is collected, transmitted, or shared with third parties. Users can export a JSON backup to their device storage if they choose.
+
+---
+
+How to test:
+1. Open the app.
+2. Tap "New Task" or the + button.
+3. Type or speak a task (e.g., "Clean my room").
+4. Tap the task to add subtasks or edit the title.
+5. Mark subtasks complete to see progress.
+6. When all subtasks are done, the completion screen appears.
+7. Check the home screen widget for quick-glance task info.
+
+---
+
+Contact:
+support@evertask.app

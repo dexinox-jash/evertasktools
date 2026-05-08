@@ -1,0 +1,37 @@
+EverTask — 30-Second Promo Video Script
+
+---
+
+[0:00-0:03] OPENING SHOT
+Show the EverTask app icon launching into the main screen.
+Voiceover: "Overwhelmed by big tasks?"
+
+[0:03-0:08] VOICE INPUT
+Show the user tapping the mic button and saying, "Plan my workout."
+The app instantly creates a task with subtasks: Warm up, Lift weights, Stretch, Cool down.
+Voiceover: "Just say it. EverTask breaks it down into steps."
+
+[0:08-0:14] SMART TEMPLATES
+Show a few quick task creations: "Grocery shop," "Write email," "Study session."
+Each automatically expands into relevant subtasks.
+Voiceover: "Smart templates recognize what you need and build the plan for you."
+
+[0:14-0:20] PROGRESS & COMPLETION
+Show subtasks being checked off, the progress bar filling up, and the celebration screen with confetti.
+Voiceover: "Track your progress and celebrate every win."
+
+[0:20-0:26] WIDGETS & REMINDERS
+Show the home screen widget updating in real time, then a reminder notification appearing.
+Voiceover: "Widgets and reminders keep you on track without opening the app."
+
+[0:26-0:30] CLOSING
+Show the app logo and Google Play badge.
+Voiceover: "EverTask. Break down any task in seconds. Download free on Google Play."
+
+---
+
+Visual Style Notes:
+- Use the teal and white color palette from the app
+- Keep transitions fast and fluid
+- Show real app UI, no mockups
+- Background music: upbeat, minimal, no lyrics

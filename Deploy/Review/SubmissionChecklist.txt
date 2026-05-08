@@ -1,0 +1,47 @@
+Pre-Submission Checklist — Final Flight Check
+
+Before clicking "Send for review" in Google Play Console, confirm every item below:
+
+BUILD ARTIFACTS
+[ ] Release AAB exists: Android/Build/Output/evertask-1.0.0-release.aab
+[ ] Debug APK tested on a real device
+[ ] ProGuard mapping files present in Android/Build/Output/mapping/
+[ ] validate_deploy.ps1 passes with ✅ DEPLOY PACKAGE VALID
+
+STORE LISTING
+[ ] App name set to "EverTask"
+[ ] Short description copied from title.txt / short_description.txt
+[ ] Full description copied from full_description.txt
+[ ] Store icon uploaded: icon_512x512.png
+[ ] Feature graphic uploaded: feature_graphic_1024x500.png
+[ ] At least 2 phone screenshots uploaded
+[ ] Category set to "Productivity"
+
+COMPLIANCE
+[ ] Data Safety form completed using Android/Policy/data_safety_form.md
+[ ] Content Rating questionnaire completed using Android/Policy/content_rating_guide.md
+[ ] Privacy policy URL is publicly accessible
+[ ] Privacy policy URL pasted into Play Console
+[ ] Data deletion policy explained in Play Console
+
+REVIEW INFO
+[ ] Reviewer notes pasted from Review/ReviewNotes.txt
+[ ] Contact email set to support@evertask.app
+[ ] Test accounts marked as "N/A — no login required"
+
+APP CONTENT
+[ ] Target audience set to 18+ (or adjusted if targeting younger users)
+[ ] Ads declared as "No"
+[ ] COVID-19 declared as "No"
+[ ] News app declared as "No"
+
+RELEASE
+[ ] Production release created
+[ ] AAB uploaded to the release
+[ ] Release notes written
+[ ] Save button clicked
+
+FINAL
+[ ] All Play Console sections show a green checkmark ✅
+[ ] Keystore backed up in at least 2 secure locations
+[ ] Calendar reminder set to check review status in 3-5 days

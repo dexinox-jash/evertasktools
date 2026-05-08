@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<actions>
+    <action intentName="actions.intent.CREATE_TASK">
+        <fulfillment urlTemplate="evertask://create{?title}">
+            <parameter-mapping intentParameter="task.name" urlParameter="title" />
+        </fulfillment>
+    </action>
+</actions>

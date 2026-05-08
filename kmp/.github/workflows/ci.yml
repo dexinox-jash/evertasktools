@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        working-directory: kmp
+
+      - name: Run unit tests
+        run: ./gradlew :androidApp:testDebugUnitTest :shared:testDebugUnitTest
+        working-directory: kmp
+
+      - name: Assemble Debug APK
+        run: ./gradlew :androidApp:assembleDebug
+        working-directory: kmp
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-apk
+          path: kmp/androidApp/build/outputs/apk/debug/*.apk

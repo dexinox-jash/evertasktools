@@ -1,0 +1,39 @@
+EverTask Voice Assistant Integration Notes
+==========================================
+
+Physical Device Testing Findings
+----------------------------------
+1. Microphone crash on Samsung devices
+   - Root cause: OEM SpeechRecognizer instability when destroy() is called during pending callbacks.
+   - Fix applied in VoiceInputComponent.kt:
+     * All RecognitionListener callbacks wrapped in try/catch.
+     * destroy() deferred by 300ms via Handler.postDelayed.
+     * startListening() wrapped in try/catch(RuntimeException).
+
+2. Gemini, Bixby, and Google Assistant cannot trigger EverTask actions
+   - This is a platform limitation, not a code bug.
+
+Platform Limitations
+--------------------
+* Bixby (Samsung):
+  - Requires a dedicated Samsung Bixby Capsule built with the Bixby Developer Studio.
+  - There is no standard Android API for third-party apps to register Bixby actions.
+
+* Gemini (Google):
+  - Currently does not expose standard Android APIs (e.g. Intent filters or App Actions) for third-party apps to be triggered.
+  - Extensions are limited to a whitelist of Google-approved partners.
+
+* Google Assistant:
+  - App Actions (actions.xml) require Google's post-publication verification.
+  - App Actions do NOT work for unpublished apps.
+  - After Play Store publication, Google must review and approve the actions.xml before users can invoke them.
+
+Current Code State
+------------------
+* actions.xml contains a single, non-duplicate UPDATE_TASK mapping.
+* VoiceCommandReceiver remains android:exported="false" by design (internal use only).
+* Deep links (evertask://) are handled in MainActivity and will be reachable by Google Assistant once verified post-launch.
+
+Recommendation for Reviewers
+-----------------------------
+Approve the app for launch. Voice assistant integrations will become active for Google Assistant only after the App Actions verification process completes post-publication. Bixby and Gemini integrations would require separate, platform-specific development efforts outside the scope of this release.

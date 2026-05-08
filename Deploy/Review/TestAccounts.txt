@@ -1,0 +1,16 @@
+Test Accounts for Reviewers
+
+App: EverTask
+Package: com.evertask.app
+
+---
+
+Status: N/A
+
+EverTask does not require any account, login, or password. The app is fully functional immediately upon opening with no registration step.
+
+---
+
+How to test:
+1. Install and open the app.
+2. Begin creating tasks right away.
