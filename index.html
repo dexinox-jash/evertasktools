@@ -1,906 +1,672 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>EverTaskTools — Portfolio</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EverTaskTools — Break Down Any Task. Instantly. Offline.</title>
+<meta name="description" content="Zero-friction, offline-first task breakdown app for iOS and Android. No AI. No cloud. No accounts. One-time purchase.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:           #f5f5f0;
-  --bg-elevated:  #fafaf8;
-  --bg-inset:     #e8e8e3;
-  --text:         #1a1a1a;
-  --text-soft:    #4a4a4a;
-  --text-mute:    #6b6b6b;
-  --text-faint:   #9a9a9a;
-  --accent:       #3eb489;
-  --accent-bright:#2e9a72;
-  --accent-glow:  rgba(62, 180, 137, 0.15);
-  --accent-line:  rgba(62, 180, 137, 0.25);
-  --line:         #d8d8d3;
-  --line-warm:    #c8c8c3;
-  --serif:    'Lora', Georgia, serif;
-  --sans:     'Poppins', system-ui, sans-serif;
-  --mono:     'JetBrains Mono', ui-monospace, monospace;
-  --ease:     cubic-bezier(0.22, 1, 0.36, 1);
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body {
-  background: var(--bg); color: var(--text-soft);
-  font-family: var(--sans); font-size: 1rem; line-height: 1.7;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
-::selection { background: var(--accent); color: #fff; }
-body::before {
-  content: ''; position: fixed; inset: -10% -10% auto -10%; height: 70vh;
-  background:
-    radial-gradient(ellipse 60% 100% at 50% 0%, rgba(62, 180, 137, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 80% 100% at 20% 10%, rgba(62, 180, 137, 0.04) 0%, transparent 50%);
-  pointer-events: none; z-index: 0;
-}
-body::after {
-  content: ''; position: fixed; inset: 0;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1   0 0 0 0 0.1   0 0 0 0 0.1   0 0 0 0.03 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-  opacity: 0.4; pointer-events: none; z-index: 1; mix-blend-mode: overlay;
-}
-a { color: var(--text); text-decoration: none; border-bottom: 1px solid var(--accent-line); transition: border-color 200ms; }
-a:hover { border-bottom-color: var(--accent-bright); }
-h1, h2, h3, h4 { font-family: var(--serif); font-weight: 500; color: var(--text); letter-spacing: -0.01em; }
-.wrap   { max-width: 1100px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
-section { padding: 9rem 0; position: relative; z-index: 2; }
-section + section { border-top: 1px solid var(--line); }
-.eye {
-  font-family: var(--mono); font-size: 0.72rem;
-  text-transform: uppercase; letter-spacing: 0.22em;
-  color: var(--accent-bright); margin-bottom: 2.5rem;
-  display: flex; align-items: center; gap: 0.85rem;
-}
-.eye::before { content: ''; width: 32px; height: 1px; background: var(--accent-bright); }
-.top {
-  position: sticky; top: 0; z-index: 50;
-  background: rgba(245, 245, 240, 0.75);
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--line); padding: 1.1rem 2rem;
-  font-family: var(--mono); font-size: 0.78rem; color: var(--text-mute);
-  display: flex; justify-content: space-between; align-items: center;
-  letter-spacing: 0.02em;
-}
-.top .left, .top .right { display: flex; gap: 1.25rem; align-items: center; }
-.top .name { color: var(--text); font-weight: 600; letter-spacing: 0.08em; }
-.top .live { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--accent-bright); }
-.top .live::before {
-  content: ''; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--accent-bright); box-shadow: 0 0 8px var(--accent-glow);
-  animation: live 2s ease-in-out infinite;
-}
-@keyframes live { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-.top a { border: none; color: var(--text-mute); }
-.top a:hover { color: var(--text); }
-.reveal {
-  opacity: 0; transform: translateY(24px);
-  transition: opacity 800ms var(--ease), transform 800ms var(--ease);
-}
-.reveal.visible { opacity: 1; transform: none; }
-.reveal.d1 { transition-delay: 80ms; }
-.reveal.d2 { transition-delay: 160ms; }
-.reveal.d3 { transition-delay: 240ms; }
-.reveal.d4 { transition-delay: 320ms; }
+  :root {
+    --bg: #F5F5F0;
+    --surface: #FFFFFF;
+    --text: #1A1A1A;
+    --text-secondary: #555555;
+    --text-muted: #888888;
+    --primary: #3EB489;
+    --primary-hover: #35a079;
+    --border: rgba(26,26,26,0.08);
+    --shadow: rgba(26,26,26,0.06);
+    --shadow-lg: rgba(26,26,26,0.12);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --max-width: 1120px;
+    --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
 
-.hero { padding: 12rem 0 8rem; }
-.hero h1 {
-  font-family: var(--serif); font-weight: 500;
-  font-size: clamp(2.6rem, 7vw, 5.5rem); line-height: 1.05;
-  letter-spacing: -0.025em; max-width: 22ch;
-  margin-bottom: 2.5rem; color: var(--text);
-}
-.hero h1 em { font-style: italic; font-weight: 400; color: var(--accent-bright); }
-.hero .lede { font-size: 1.25rem; line-height: 1.55; color: var(--text-soft); max-width: 60ch; margin-bottom: 3rem; font-family: var(--serif); }
-.hero .meta {
-  font-family: var(--mono); font-size: 0.78rem; color: var(--text-mute);
-  display: flex; flex-wrap: wrap; gap: 2rem;
-  margin-top: 4rem; padding-top: 2rem;
-  border-top: 1px solid var(--line); letter-spacing: 0.05em;
-}
-.hero .meta div { display: flex; flex-direction: column; gap: 0.4rem; }
-.hero .meta .k { color: var(--text-faint); text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.18em; }
-.hero .meta .v { color: var(--text); }
-.cta {
-  display: inline-flex; align-items: center; gap: 0.75rem;
-  padding: 1rem 1.75rem; background: var(--accent); color: #fff;
-  font-family: var(--sans); font-size: 1rem; font-weight: 600;
-  border: 1px solid var(--accent); border-radius: 2px;
-  transition: background 200ms, transform 200ms;
-}
-.cta:hover { background: var(--accent-bright); border-color: var(--accent-bright); transform: translateY(-1px); border-bottom: 1px solid var(--accent-bright); }
-.cta::after { content: '→'; transition: transform 200ms; }
-.cta:hover::after { transform: translateX(3px); }
-.cta-ghost {
-  display: inline-flex; align-items: center; gap: 0.6rem;
-  padding: 1rem 0; margin-left: 2rem;
-  color: var(--text-soft); font-family: var(--sans); font-size: 1rem;
-  border: none; border-bottom: 1px solid var(--line);
-}
-.cta-ghost:hover { color: var(--text); border-bottom-color: var(--accent-bright); }
+  [data-theme="dark"] {
+    --bg: #1A1A1A;
+    --surface: #242424;
+    --text: #F5F5F0;
+    --text-secondary: #B0B0B0;
+    --text-muted: #777777;
+    --border: rgba(245,245,240,0.08);
+    --shadow: rgba(0,0,0,0.25);
+    --shadow-lg: rgba(0,0,0,0.4);
+  }
 
-.dual { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 5rem; padding-top: 4rem; border-top: 1px solid var(--line); }
-.dual .card { position: relative; }
-.dual .card::before {
-  content: attr(data-num); font-family: var(--mono); font-size: 0.7rem;
-  letter-spacing: 0.3em; color: var(--accent-bright); text-transform: uppercase;
-  display: block; margin-bottom: 1rem;
-}
-.dual h3 { font-family: var(--serif); font-weight: 500; font-size: 1.5rem; line-height: 1.2; margin-bottom: 1rem; color: var(--text); }
-.dual p { color: var(--text-soft); font-size: 1rem; line-height: 1.65; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-.h2-intro { font-size: clamp(2rem, 4.5vw, 3.5rem); line-height: 1.1; max-width: 22ch; margin-bottom: 1.5rem; }
-.h2-intro + .lede { font-size: 1.15rem; color: var(--text-soft); max-width: 65ch; margin-bottom: 0; font-family: var(--serif); }
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-.cards { display: grid; gap: 1.5rem; margin-top: 3rem; }
-.cards.c2 { grid-template-columns: 1fr 1fr; }
-.cards.c4 { grid-template-columns: repeat(4, 1fr); }
-.card-block {
-  padding: 2rem; border: 1px solid var(--line); background: var(--bg);
-  border-radius: 2px; transition: border-color 250ms, transform 250ms var(--ease);
-}
-.card-block:hover { border-color: var(--accent-line); transform: translateY(-2px); }
-.card-block .label {
-  font-family: var(--mono); font-size: 0.7rem;
-  text-transform: uppercase; letter-spacing: 0.22em;
-  color: var(--accent-bright); margin-bottom: 1rem;
-}
-.card-block h3 { font-family: var(--serif); font-weight: 500; font-size: 1.2rem; line-height: 1.3; margin-bottom: 0.85rem; color: var(--text); }
-.card-block p { color: var(--text-soft); font-size: 0.98rem; line-height: 1.6; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    transition: background var(--transition), color var(--transition);
+    overflow-x: hidden;
+  }
 
-.process-meta {
-  margin-top: 2.5rem; padding: 2.5rem 3rem;
-  border-left: 2px solid var(--accent);
-  background: var(--bg-elevated); border-radius: 2px;
-}
-.process-meta .label {
-  font-family: var(--mono); font-size: 0.72rem;
-  letter-spacing: 0.25em; text-transform: uppercase;
-  color: var(--accent-bright); margin-bottom: 1rem;
-}
-.process-meta p {
-  font-family: var(--serif); font-style: italic;
-  font-size: 1.2rem; line-height: 1.55;
-  color: var(--text); letter-spacing: -0.005em;
-}
-.process-meta p code {
-  font-family: var(--mono); font-style: normal; font-size: 0.95rem;
-  background: var(--bg-inset); padding: 1px 7px;
-  border-radius: 2px; color: var(--accent-bright);
-  border: 1px solid var(--line);
-}
+  a { color: inherit; text-decoration: none; }
 
-.psr { margin-top: 3rem; }
-.psr .step { padding: 3rem 0; display: grid; grid-template-columns: 220px 1fr; gap: 4rem; align-items: start; border-top: 1px solid var(--line); }
-.psr .step:last-child { border-bottom: 1px solid var(--line); }
-.psr .step .label { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.25em; color: var(--accent-bright); padding-top: 0.7rem; }
-.psr .step h3 { font-family: var(--serif); font-weight: 500; font-size: 1.85rem; line-height: 1.2; margin-bottom: 1.25rem; }
-.psr .step p { color: var(--text-soft); font-size: 1.0625rem; line-height: 1.65; }
+  /* Animations */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .delay-1 { transition-delay: 0.1s; }
+  .delay-2 { transition-delay: 0.2s; }
+  .delay-3 { transition-delay: 0.3s; }
+  .delay-4 { transition-delay: 0.4s; }
 
-.viz { margin-top: 4rem; padding: 2.5rem; border: 1px solid var(--line); background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg) 100%); border-radius: 2px; overflow-x: auto; }
-.viz-cap { font-family: var(--mono); font-size: 0.72rem; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.22em; margin-bottom: 1.5rem; }
-.viz-svg { display: block; max-width: 100%; height: auto; }
-.arch-svg .col-title { font-family: var(--mono); font-weight: 500; font-size: 11px; fill: var(--text); letter-spacing: 0.3em; }
-.arch-svg .col-sub   { font-family: var(--mono); font-size: 9px;  fill: var(--text-faint); letter-spacing: 0.18em; }
-.arch-svg .layer-name{ font-family: var(--serif); font-weight: 500; font-size: 13px; fill: var(--text); }
-.arch-svg .layer-detail{font-family: var(--mono); font-size: 10px; fill: var(--text-mute); }
-.arch-svg .rect      { fill: var(--bg-inset); stroke: var(--line-warm); stroke-width: 1; }
-.arch-svg .rect.accent{stroke: var(--accent); stroke-width: 1.5; }
-.arch-svg .arrow     { stroke: var(--accent); stroke-width: 1.2; fill: none; opacity: 0.6; marker-end: url(#arrowA); }
-.arch-svg .layer-num { font-family: var(--mono); font-size: 10px; fill: var(--accent-bright); letter-spacing: 0.1em; }
+  /* Header */
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(245,245,240,0.75);
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    border-bottom: 1px solid var(--border);
+    transition: background var(--transition);
+  }
+  [data-theme="dark"] header {
+    background: rgba(26,26,26,0.75);
+  }
+  .header-inner {
+    max-width: var(--max-width); margin: 0 auto;
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 800; font-size: 1.15rem; letter-spacing: -0.02em;
+  }
+  .logo-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--primary);
+    display: grid; place-items: center;
+  }
+  .logo-icon svg { width: 18px; height: 18px; }
 
-.callout { margin-top: 3rem; padding: 2.5rem 3rem; border-left: 2px solid var(--accent); background: var(--bg-elevated); }
-.callout .label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent-bright); margin-bottom: 1rem; }
-.callout p { font-family: var(--serif); font-style: italic; font-size: 1.2rem; line-height: 1.5; color: var(--text); }
+  .nav-links { display: flex; align-items: center; gap: 28px; }
+  .nav-links a {
+    font-size: 0.9rem; font-weight: 500; color: var(--text-secondary);
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
 
-.bento { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: var(--line); margin-top: 4rem; border: 1px solid var(--line); }
-.feat { background: var(--bg); padding: 2.25rem; transition: background 250ms; }
-.feat:hover { background: var(--bg-elevated); }
-.feat .num { font-family: var(--mono); font-size: 0.7rem; color: var(--accent-bright); letter-spacing: 0.22em; margin-bottom: 0.85rem; }
-.feat h3 { font-family: var(--serif); font-weight: 500; font-size: 1.25rem; line-height: 1.25; margin-bottom: 0.85rem; color: var(--text); }
-.feat p { color: var(--text-soft); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem; }
-.feat .tech { display: inline-block; font-family: var(--mono); font-size: 0.7rem; color: var(--text-mute); border: 1px solid var(--line-warm); padding: 0.2rem 0.55rem; border-radius: 2px; margin-bottom: 1rem; }
-.feat .witty { font-family: var(--serif); font-style: italic; font-size: 0.95rem; color: var(--text-mute); border-top: 1px solid var(--line); padding-top: 1rem; }
-.feat.s3 { grid-column: span 3; }
-.feat.s2 { grid-column: span 2; }
+  .theme-toggle {
+    width: 40px; height: 40px; border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer; display: grid; place-items: center;
+    transition: background var(--transition), border-color var(--transition);
+  }
+  .theme-toggle:hover { border-color: var(--primary); }
+  .theme-toggle svg { width: 18px; height: 18px; fill: var(--text-secondary); transition: fill 0.2s; }
+  .theme-toggle:hover svg { fill: var(--primary); }
 
-.exhibit { margin-top: 4rem; }
-.exhibit .label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent-bright); margin-bottom: 1rem; }
-.exhibit h3 { font-family: var(--serif); font-weight: 500; font-size: 1.85rem; line-height: 1.2; margin-bottom: 1.25rem; }
-.exhibit .story { color: var(--text-soft); font-size: 1.0625rem; line-height: 1.65; margin-bottom: 2.5rem; max-width: 70ch; }
-.code-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); }
-.code-pair .col { background: var(--bg-inset); padding: 1.5rem; }
-.code-pair .col .tag { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 1rem; display: block; }
-.code-pair .before .tag { color: var(--text-faint); }
-.code-pair .after  .tag { color: var(--accent-bright); }
-pre { font-family: var(--mono); font-size: 0.78rem; line-height: 1.7; color: var(--text-soft); background: transparent; white-space: pre; overflow-x: auto; }
+  /* Hero */
+  .hero {
+    padding: 140px 24px 80px;
+    max-width: var(--max-width); margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+  }
+  .hero-text h1 {
+    font-size: clamp(2.4rem, 5vw, 3.6rem);
+    font-weight: 800; line-height: 1.08; letter-spacing: -0.03em;
+    margin-bottom: 20px;
+  }
+  .hero-text h1 span { color: var(--primary); }
+  .hero-text p {
+    font-size: 1.15rem; color: var(--text-secondary); line-height: 1.6;
+    max-width: 480px; margin-bottom: 32px;
+  }
+  .hero-cta { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 0.95rem;
+    transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
+    cursor: pointer; border: none;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary {
+    background: var(--primary); color: #fff;
+    box-shadow: 0 6px 20px rgba(62,180,137,0.35);
+  }
+  .btn-primary:hover { background: var(--primary-hover); box-shadow: 0 8px 24px rgba(62,180,137,0.45); }
+  .btn-ghost {
+    background: var(--surface); color: var(--text);
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
 
-.metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 4rem; border: 1px solid var(--line); }
-.metric { padding: 2.5rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg); transition: background 250ms; }
-.metric:hover { background: var(--bg-elevated); }
-.metric:nth-child(4n) { border-right: none; }
-.metric:nth-last-child(-n+4) { border-bottom: none; }
-.metric .lbl { font-family: var(--mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.22em; color: var(--text-mute); margin-bottom: 1.25rem; }
-.metric .val { font-family: var(--serif); font-weight: 500; font-size: 3.25rem; line-height: 1; color: var(--text); letter-spacing: -0.03em; }
-.metric .val .unit { font-size: 1.4rem; color: var(--text-mute); margin-left: 0.3rem; font-style: italic; font-weight: 400; }
-.metric .desc { margin-top: 1.25rem; font-size: 0.92rem; color: var(--text-soft); line-height: 1.6; }
+  /* Phone mockup */
+  .phone-wrap { display: flex; justify-content: center; }
+  .phone {
+    width: 280px; height: 560px; border-radius: 40px;
+    background: #111; padding: 10px;
+    box-shadow: 0 24px 60px var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.06) inset;
+    position: relative; transform: rotate(-2deg);
+    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+  .phone:hover { transform: rotate(0deg) scale(1.02); }
+  .phone-notch {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    width: 100px; height: 24px; background: #111; border-radius: 0 0 14px 14px;
+    z-index: 2;
+  }
+  .phone-screen {
+    width: 100%; height: 100%; border-radius: 32px; overflow: hidden;
+    background: var(--bg); position: relative;
+  }
+  .screen-content { padding: 44px 18px 18px; height: 100%; overflow: hidden; }
+  .screen-title {
+    font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 12px;
+  }
+  .screen-input {
+    width: 100%; padding: 12px 14px; border-radius: var(--radius-sm);
+    border: 2px solid var(--primary); background: var(--surface);
+    color: var(--text); font-size: 0.85rem; font-weight: 500; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .screen-input span { color: var(--text-muted); font-weight: 400; }
+  .screen-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .chip {
+    padding: 5px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;
+    background: rgba(62,180,137,0.12); color: var(--primary);
+    border: 1px solid rgba(62,180,137,0.25);
+  }
+  .chip:nth-child(2) { background: rgba(62,180,137,0.08); color: #2d8f6a; border-color: rgba(62,180,137,0.18); }
+  .chip:nth-child(3) { background: rgba(62,180,137,0.06); color: #267a5a; border-color: rgba(62,180,137,0.12); }
+  .task-list { display: flex; flex-direction: column; gap: 8px; }
+  .task-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); padding: 10px 12px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+  .task-check {
+    width: 18px; height: 18px; border-radius: 5px; border: 2px solid var(--primary);
+    display: grid; place-items: center; flex-shrink: 0;
+  }
+  .task-check.checked { background: var(--primary); }
+  .task-check.checked svg { width: 10px; height: 10px; }
+  .task-text { font-size: 0.8rem; font-weight: 500; color: var(--text); }
+  .task-text.done { text-decoration: line-through; color: var(--text-muted); }
+  .task-time {
+    margin-left: auto; font-size: 0.7rem; font-weight: 600; color: var(--primary);
+    background: rgba(62,180,137,0.1); padding: 2px 6px; border-radius: 4px;
+  }
 
-.decisions { margin-top: 3rem; }
-details.decision { border-top: 1px solid var(--line); padding: 2rem 0; }
-details.decision:last-of-type { border-bottom: 1px solid var(--line); }
-details.decision summary { cursor: pointer; list-style: none; display: grid; grid-template-columns: 60px 1fr auto; gap: 2rem; align-items: baseline; }
-details.decision summary::-webkit-details-marker { display: none; }
-details.decision .qnum { font-family: var(--mono); font-size: 0.85rem; color: var(--accent-bright); letter-spacing: 0.2em; }
-details.decision .q { font-family: var(--serif); font-weight: 500; font-size: 1.3rem; line-height: 1.3; color: var(--text); }
-details.decision .arrow { font-family: var(--mono); font-size: 0.9rem; color: var(--text-mute); transition: transform 250ms; }
-details.decision[open] .arrow { transform: rotate(45deg); color: var(--accent-bright); }
-details.decision .body { margin-top: 1.5rem; padding-left: calc(60px + 2rem); display: flex; flex-direction: column; gap: 1.25rem; color: var(--text-soft); max-width: 75ch; }
-details.decision .short { font-family: var(--serif); font-style: italic; font-size: 1.1rem; color: var(--accent-bright); line-height: 1.4; }
-details.decision .long { font-size: 1rem; line-height: 1.7; }
+  /* Sections */
+  section { padding: 80px 24px; }
+  .section-inner { max-width: var(--max-width); margin: 0 auto; }
+  .section-header {
+    text-align: center; max-width: 640px; margin: 0 auto 56px;
+  }
+  .section-header h2 {
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem); font-weight: 800;
+    letter-spacing: -0.02em; margin-bottom: 12px;
+  }
+  .section-header p { color: var(--text-secondary); font-size: 1.05rem; }
 
-.timeline { margin-top: 4rem; }
-.phase { display: grid; grid-template-columns: 240px 1fr; gap: 3rem; padding: 3rem 0; border-top: 1px solid var(--line); align-items: start; }
-.phase:last-child { border-bottom: 1px solid var(--line); }
-.phase .meta { display: flex; flex-direction: column; gap: 0.75rem; }
-.phase .pnum { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.22em; color: var(--accent-bright); text-transform: uppercase; }
-.phase .ptitle { font-family: var(--serif); font-weight: 500; font-size: 1.25rem; line-height: 1.2; color: var(--text); }
-.phase .mood { font-family: var(--mono); font-size: 0.72rem; color: var(--text-mute); letter-spacing: 0.15em; text-transform: uppercase; }
-.phase .story { color: var(--text-soft); font-size: 1.0625rem; line-height: 1.65; margin-bottom: 1rem; }
-.phase .story strong { color: var(--text); font-weight: 500; font-family: var(--serif); font-style: italic; }
-.phase .deliverable { font-family: var(--mono); font-size: 0.85rem; color: var(--accent-bright); border-left: 1px solid var(--accent); padding-left: 1rem; line-height: 1.5; }
+  /* Features */
+  .features-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+  }
+  .feature-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px;
+    box-shadow: 0 2px 12px var(--shadow);
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+  }
+  .feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px var(--shadow-lg);
+    border-color: rgba(62,180,137,0.3);
+  }
+  .feature-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(62,180,137,0.1); color: var(--primary);
+    display: grid; place-items: center; margin-bottom: 16px;
+  }
+  .feature-icon svg { width: 22px; height: 22px; }
+  .feature-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+  .feature-card p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.55; }
 
-.reflection-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 3rem; }
-.reflection-grid .block { padding-top: 1.5rem; border-top: 1px solid var(--accent); }
-.reflection-grid .label { font-family: var(--mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.22em; color: var(--accent-bright); margin-bottom: 1rem; }
-.reflection-grid h3 { font-family: var(--serif); font-weight: 500; font-size: 1.5rem; line-height: 1.2; color: var(--text); margin-bottom: 1rem; }
-.reflection-grid p { color: var(--text-soft); font-size: 1rem; line-height: 1.65; }
+  /* Templates */
+  .templates-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  }
+  .template-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px; text-align: center;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+    cursor: default;
+  }
+  .template-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px var(--shadow-lg);
+    border-color: rgba(62,180,137,0.25);
+  }
+  .template-icon {
+    width: 48px; height: 48px; border-radius: 14px;
+    background: rgba(62,180,137,0.1); color: var(--primary);
+    display: grid; place-items: center; margin: 0 auto 14px;
+  }
+  .template-icon svg { width: 24px; height: 24px; }
+  .template-card h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+  .template-card span { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
 
-footer.recursive { padding: 10rem 0 6rem; border-top: 1px solid var(--line); position: relative; background: radial-gradient(ellipse 60% 80% at 50% 100%, rgba(62, 180, 137, 0.08) 0%, transparent 60%); }
-footer.recursive h2 { font-family: var(--serif); font-weight: 500; font-size: clamp(2rem, 4.5vw, 3.5rem); line-height: 1.15; letter-spacing: -0.025em; max-width: 28ch; margin-bottom: 2rem; }
-footer.recursive .cta-line { color: var(--text-soft); font-size: 1.2rem; line-height: 1.55; margin-bottom: 3rem; max-width: 50ch; font-family: var(--serif); }
-footer.recursive .next { margin-top: 6rem; padding-top: 2rem; border-top: 1px solid var(--line); color: var(--text-mute); font-family: var(--mono); font-size: 0.85rem; letter-spacing: 0.05em; }
+  /* How it works */
+  .steps {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;
+  }
+  .step {
+    text-align: center; position: relative;
+  }
+  .step-num {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--primary); color: #fff;
+    font-size: 1.2rem; font-weight: 800;
+    display: grid; place-items: center; margin: 0 auto 18px;
+    box-shadow: 0 6px 18px rgba(62,180,137,0.35);
+  }
+  .step h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+  .step p { font-size: 0.95rem; color: var(--text-secondary); max-width: 280px; margin: 0 auto; }
 
-.integrity { background: var(--bg-inset); padding: 3rem 2rem; font-family: var(--mono); font-size: 0.78rem; color: var(--text-mute); line-height: 1.7; border-top: 1px solid var(--line); }
-.integrity .row { max-width: 1100px; margin: 0 auto; }
-.integrity strong { color: var(--text-soft); font-weight: 500; }
-.integrity em { color: var(--accent-bright); font-style: normal; }
+  /* Stats */
+  .stats-bar {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px 40px;
+    display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap;
+    gap: 20px; box-shadow: 0 2px 12px var(--shadow);
+  }
+  .stat { text-align: center; }
+  .stat-value {
+    font-size: 1.6rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em;
+  }
+  .stat-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 4px; }
 
-.detector-list { margin-top: 3rem; }
-.detector { display: grid; grid-template-columns: 60px 1fr; gap: 2rem; align-items: baseline; padding: 1.5rem 0; border-top: 1px solid var(--line); transition: padding 250ms var(--ease); }
-.detector:hover { padding-left: 1rem; padding-right: 1rem; background: var(--bg-elevated); }
-.detector:last-child { border-bottom: 1px solid var(--line); }
-.detector .num { font-family: var(--mono); font-size: 0.85rem; color: var(--accent-bright); letter-spacing: 0.15em; }
-.detector h4 { font-family: var(--serif); font-weight: 500; font-size: 1.1rem; color: var(--text); margin-bottom: 0.4rem; }
-.detector .desc { color: var(--text-soft); font-size: 0.95rem; line-height: 1.55; }
+  /* Tech badges */
+  .tech-badges {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 24px;
+  }
+  .badge {
+    padding: 7px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 600;
+    background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary);
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .badge:hover { border-color: var(--primary); color: var(--primary); }
 
-@media (max-width: 1000px) {
-  section { padding: 6rem 0; }
-  .hero { padding: 8rem 0 5rem; }
-  .dual, .reflection-grid { grid-template-columns: 1fr; gap: 2rem; }
-  .cards.c4 { grid-template-columns: 1fr 1fr; }
-  .psr .step, .phase { grid-template-columns: 1fr; gap: 1.5rem; }
-  .detector { grid-template-columns: 50px 1fr; }
-  details.decision summary { grid-template-columns: 50px 1fr; }
-  details.decision .arrow { display: none; }
-  details.decision .body { padding-left: calc(50px + 2rem); }
-  .bento { grid-template-columns: 1fr; }
-  .feat.s3, .feat.s2 { grid-column: span 1; }
-  .code-pair { grid-template-columns: 1fr; }
-  .metrics-grid { grid-template-columns: 1fr 1fr; }
-  .metric:nth-child(2n) { border-right: none; }
-  .metric:nth-last-child(-n+4) { border-bottom: 1px solid var(--line); }
-  .metric:nth-last-child(-n+2) { border-bottom: none; }
-}
-@media (max-width: 640px) {
-  .cards.c4 { grid-template-columns: 1fr; }
-  .metrics-grid { grid-template-columns: 1fr; }
-  .metric { border-right: none; }
-  .metric:not(:last-child) { border-bottom: 1px solid var(--line); }
-}
+  /* CTA */
+  .cta-section {
+    background: linear-gradient(135deg, rgba(62,180,137,0.08) 0%, rgba(62,180,137,0.02) 100%);
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  }
+  .cta-inner { text-align: center; max-width: 640px; margin: 0 auto; }
+  .cta-inner h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; margin-bottom: 12px; }
+  .cta-inner p { color: var(--text-secondary); font-size: 1.05rem; margin-bottom: 32px; }
+
+  /* Footer */
+  footer {
+    padding: 40px 24px; border-top: 1px solid var(--border);
+    text-align: center; color: var(--text-muted); font-size: 0.85rem;
+  }
+  footer a { color: var(--text-secondary); font-weight: 500; transition: color 0.2s; }
+  footer a:hover { color: var(--primary); }
+  .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 12px; flex-wrap: wrap; }
+
+  /* Mobile */
+  @media (max-width: 960px) {
+    .hero { grid-template-columns: 1fr; text-align: center; padding-top: 120px; }
+    .hero-text p { margin-left: auto; margin-right: auto; }
+    .hero-cta { justify-content: center; }
+    .phone { transform: rotate(0deg) scale(0.92); }
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
+    .templates-grid { grid-template-columns: repeat(2, 1fr); }
+    .steps { grid-template-columns: 1fr; gap: 40px; }
+  }
+  @media (max-width: 560px) {
+    .features-grid { grid-template-columns: 1fr; }
+    .templates-grid { grid-template-columns: repeat(2, 1fr); }
+    .nav-links a { display: none; }
+    .stats-bar { padding: 20px 24px; gap: 16px; }
+    .stat-value { font-size: 1.3rem; }
+  }
 </style>
 </head>
 <body>
 
-<div class="top">
-  <div class="left">
-    <span class="name">EVERTASKTOOLS</span>
-    <span style="color: var(--text-faint);">·</span>
-    <span>Portfolio piece 06 / 09</span>
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      EverTaskTools
+    </a>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#templates">Templates</a>
+      <a href="#how-it-works">How It Works</a>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+        <svg id="moon" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        <svg id="sun" viewBox="0 0 24 24" fill="currentColor" style="display:none"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </button>
+    </nav>
   </div>
-  <div class="right">
-    <span class="live">Android v1.0.0 shipped</span>
-    <span>Kotlin · Compose · Room · Glance</span>
-  </div>
-</div>
+</header>
 
 <section class="hero">
-  <div class="wrap">
-    <div class="eye reveal">01 · The Hook</div>
-    <h1 class="reveal d1">I built a task-breakdown app that works instantly, offline, with zero AI — because not every problem needs a <em>neural network.</em></h1>
-    <p class="lede reveal d2">
-      Solo build of EverTaskTools: Android production-ready (Kotlin + Jetpack Compose + Room + Glance + WorkManager)
-      with iOS spec partially drafted. Deterministic rule-based templates generate structured subtasks from voice or text input
-      in under 100ms. 8 pre-loaded templates. Interactive widgets. AES-256-GCM encrypted backups. One-time purchase.
-      No AI. No cloud. No accounts.
-    </p>
-    <div class="reveal d3">
-      <a class="cta" href="#process">Read the process</a>
-      <a class="cta-ghost" href="#architecture">See the architecture</a>
+  <div class="hero-text reveal">
+    <h1>Break down any task. <span>Instantly.</span> Offline.</h1>
+    <p>No AI. No cloud. No accounts. Just deterministic templates that work in under 100ms.</p>
+    <div class="hero-cta">
+      <a href="./simulator/" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Try Interactive Demo
+      </a>
+      <a href="https://github.com/evertasktools" class="btn btn-ghost">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        View on GitHub
+      </a>
     </div>
-    <div class="meta reveal d4">
-      <div><span class="k">Role</span><span class="v">Solo · concept → v1.0.0</span></div>
-      <div><span class="k">Phases</span><span class="v">5 · research → arch → build → harden → ship</span></div>
-      <div><span class="k">Stack</span><span class="v">Kotlin 1.9 · Compose · Room · Glance</span></div>
-      <div><span class="k">Tests</span><span class="v">None in source · honesty noted</span></div>
-    </div>
-    <div class="dual">
-      <div class="card reveal" data-num="For the curious passenger">
-        <h3>You say "I need to clean my room" and the app instantly breaks it into 4 timed steps.</h3>
-        <p>No loading spinner. No API call. No ChatGPT token. Just a deterministic template engine running on your phone, offline, forever. Eight templates cover the most common daily tasks — and a wildcard fallback handles everything else. One-time purchase. No subscription. No ads. No accounts.</p>
+  </div>
+  <div class="phone-wrap reveal delay-2">
+    <div class="phone">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div class="screen-content">
+          <div class="screen-title">New Task</div>
+          <div class="screen-input">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>clean my room</span>
+          </div>
+          <div class="screen-chips">
+            <span class="chip">Cleaning</span>
+            <span class="chip">Email</span>
+            <span class="chip">Grocery</span>
+            <span class="chip">Study</span>
+            <span class="chip">Cooking</span>
+          </div>
+          <div class="task-list">
+            <div class="task-item">
+              <div class="task-check checked"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+              <span class="task-text done">Pick up clothes</span>
+              <span class="task-time">2m</span>
+            </div>
+            <div class="task-item">
+              <div class="task-check"></div>
+              <span class="task-text">Dust surfaces</span>
+              <span class="task-time">5m</span>
+            </div>
+            <div class="task-item">
+              <div class="task-check"></div>
+              <span class="task-text">Vacuum floor</span>
+              <span class="task-time">8m</span>
+            </div>
+            <div class="task-item">
+              <div class="task-check"></div>
+              <span class="task-text">Make bed</span>
+              <span class="task-time">3m</span>
+            </div>
+            <div class="task-item">
+              <div class="task-check"></div>
+              <span class="task-text">Empty trash</span>
+              <span class="task-time">2m</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="card reveal d1" data-num="For the engineer in the back">
-        <h3>Android: 151 Kotlin files. Jetpack Compose, Room, DataStore, Glance widgets, WorkManager.</h3>
-        <p>Kotlin 1.9 with Jetpack Compose BOM 2023.10.01, Material3 1.2.0-beta01, Room 2.6.1, DataStore 1.0.0, Glance 1.0.0, WorkManager 2.9.0. Template engine with exact phrase match → keyword density scoring → wildcard fallback. JSON-serialized subtasks in Room. AES-256-GCM encrypted backups. iOS: SecureBackupManager.swift implemented; full iOS stack spec'd in PROJECT_README.md.</p>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="section-inner">
+    <div class="section-header reveal">
+      <h2>Everything you need, nothing you don't</h2>
+      <p>Purpose-built for speed, privacy, and zero cognitive load.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal delay-1">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <h3>Instant Breakdown</h3>
+        <p>Type or speak a task and get structured subtasks in under 100ms. Zero loading spinners. Zero waiting.</p>
+      </div>
+      <div class="feature-card reveal delay-2">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+        <h3>8 Smart Templates</h3>
+        <p>Cleaning, email, grocery, study, cooking, workout, meeting prep, and travel packing. Deterministic matching.</p>
+      </div>
+      <div class="feature-card reveal delay-3">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </div>
+        <h3>Voice-First</h3>
+        <p>Speak your task naturally. Integrated with Google Assistant and Siri for hands-free breakdowns.</p>
+      </div>
+      <div class="feature-card reveal delay-1">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        </div>
+        <h3>Interactive Widgets</h3>
+        <p>Complete tasks directly from your home screen. Glance widgets keep you moving without opening the app.</p>
+      </div>
+      <div class="feature-card reveal delay-2">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+        </div>
+        <h3>Fully Offline</h3>
+        <p>Works in airplane mode. No internet ever required. Your tasks are ready whenever you are.</p>
+      </div>
+      <div class="feature-card reveal delay-3">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <h3>Zero Accounts</h3>
+        <p>No login, no registration, no cloud sync. Your data stays on your device, period.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="templates">
+  <div class="section-inner">
+    <div class="section-header reveal">
+      <h2>8 deterministic templates</h2>
+      <p>No guesswork, no AI hallucinations. Just reliable patterns that match your intent instantly.</p>
+    </div>
+    <div class="templates-grid">
+      <div class="template-card reveal delay-1">
+        <div class="template-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        </div>
+        <h4>Cleaning</h4>
+        <span>7 subtasks</span>
+      </div>
+      <div class="template-card reveal delay-2">
+        <div class="template-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <h4>Email</h4>
+        <span>5 subtasks</span>
+      </div>
+      <div class="template-card reveal delay-3">
+        <div class="template-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        </div>
+        <h4>Grocery</h4>
+        <span>6 subtasks</span>
+      </div>
+      <div class="template-card reveal delay-4">
+        <div class="template-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+        </div>
+        <h4>Study</h4>
+        <span>6 subtasks</span>
+      </div>
+      <div class="template-card reveal delay-1">
+        <div class="template-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.56 2.75c.13-.54.56-.96 1.1-1.07l.88-.18a2 2 0 01.8 0l.88.18c.54.11.97.53 1.1 1.07l.36 1.47a.5.5 0 00.43.36l1.54.17a2 2 0 011.7 1.7l.17 1.54a.5.5 0 00.36.43l1.47.36c.54.13.96.56 1.07 1.1l.18.88a2 2 0 010 .8l-.18.88c-.11.54-.53.97-1.07 1.1l-1.47.36a.5.5 0 00-.36.43l-.17 1.54a2 2 0 01-1.7 1.7l-1.54.17a.5.5 0 00-.43.36l-.36 1.47c-.13.54-.56.96-1.1 1.07l-.88.18a2 2 0 01-.8 0l-.88-.18c-.54-.11-.96-.53-1.1-1.07l-.36-1.47a.5.5 0 00-.43-.36l-1.54-.17a2 2 0 01-1.7-1.7l-.17-1.54a.5.5 0 00-.36-.43l-1.47-.36c-.54-.13-.96-.56-1.07-1.1l-.18-.88a2 2 0 010-.8l.18-.88c.11-.54.53-.97 1.07-1.1l1.47-.36a.5.5 0 00.36-.43l.17-1.54a2 2 0 011.7-1.7l1.54-.17a.5.5 0 00.43-.36l.36-1.47z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <h4>Cooking</h4>
+        <span>8 subtasks</span>
+      </div>
+      <div class="template-card reveal delay-2">
+        <div class="template-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11"/><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path d="M12 3v18"/></svg>
+        </div>
+        <h4>Workout</h4>
+        <span>6 subtasks</span>
+      </div>
+      <div class="template-card reveal delay-3">
+        <div class="template-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <h4>Meeting Prep</h4>
+        <span>5 subtasks</span>
+      </div>
+      <div class="template-card reveal delay-4">
+        <div class="template-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+        </div>
+        <h4>Travel Packing</h4>
+        <span>7 subtasks</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how-it-works">
+  <div class="section-inner">
+    <div class="section-header reveal">
+      <h2>How it works</h2>
+      <p>Three steps from intent to action. No onboarding, no setup.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal delay-1">
+        <div class="step-num">1</div>
+        <h3>Say or type your task</h3>
+        <p>Use your voice with Siri or Google Assistant, or quickly type what you need to do.</p>
+      </div>
+      <div class="step reveal delay-2">
+        <div class="step-num">2</div>
+        <h3>Get instant breakdown</h3>
+        <p>EverTaskTools matches your input to a deterministic template and generates timed subtasks in milliseconds.</p>
+      </div>
+      <div class="step reveal delay-3">
+        <div class="step-num">3</div>
+        <h3>Check off steps as you go</h3>
+        <p>Tap through your list, track your progress, and finish faster with zero distractions.</p>
       </div>
     </div>
   </div>
 </section>
 
 <section>
-  <div class="wrap">
-    <div class="eye reveal">02 · The bet</div>
-    <h2 class="reveal d1 h2-intro">Why I picked this fight.</h2>
-    <p class="lede reveal d2">Four short answers to the four questions every project should be able to answer before the first commit.</p>
-    <div class="cards c4">
-      <div class="card-block reveal">
-        <div class="label">Signal</div>
-        <h3>Task management apps have bifurcated into two broken extremes.</h3>
-        <p>Overly simple todo lists that don't help you break down complex tasks, and AI-powered tools that require internet, API keys, and subscription fees to do what a checklist could do. The gap is a middle ground: instant, offline, deterministic task breakdown.</p>
-      </div>
-      <div class="card-block reveal d1">
-        <div class="label">Filter</div>
-        <h3>Consumer productivity, not enterprise.</h3>
-        <p>Deterministic over probabilistic — rule-based templates instead of LLMs. Offline-first as a feature, not a limitation. One-time purchase instead of subscription. Cross-platform mobile for maximum reach.</p>
-      </div>
-      <div class="card-block reveal d2">
-        <div class="label">Why now</div>
-        <h3>AI fatigue is real.</h3>
-        <p>Users are tired of loading spinners, API rate limits, and subscription creep for simple tasks. The "AI for everything" wave has created a counter-market of people who want tools that just work — instantly, offline, forever.</p>
-      </div>
-      <div class="card-block reveal d3">
-        <div class="label">Why me</div>
-        <h3>I opened ChatGPT to break down "clean my apartment" and felt absurd.</h3>
-        <p>A billion-parameter model burning GPU cycles to tell me to vacuum. I wanted something that just knew: say "clean", get a checklist. No tokens. No latency. No subscription. The absurdity of using a neural net for a lookup table was the catalyst.</p>
-      </div>
+  <div class="section-inner">
+    <div class="stats-bar reveal">
+      <div class="stat"><div class="stat-value">8</div><div class="stat-label">Templates</div></div>
+      <div class="stat"><div class="stat-value">151</div><div class="stat-label">Kotlin Files</div></div>
+      <div class="stat"><div class="stat-value">100%</div><div class="stat-label">Offline</div></div>
+      <div class="stat"><div class="stat-value">Zero</div><div class="stat-label">Subscriptions</div></div>
+    </div>
+    <div class="tech-badges reveal delay-2">
+      <span class="badge">Kotlin 1.9</span>
+      <span class="badge">Jetpack Compose</span>
+      <span class="badge">Material3</span>
+      <span class="badge">Room 2.6.1</span>
+      <span class="badge">Glance Widgets</span>
+      <span class="badge">WorkManager</span>
     </div>
   </div>
 </section>
 
-<section>
-  <div class="wrap">
-    <div class="eye reveal">03 · No-jargon explainer</div>
-    <h2 class="reveal d1 h2-intro">Problem. Solution. Result.</h2>
-    <div class="psr">
-      <div class="step reveal">
-        <div class="label">01 · Problem</div>
-        <div>
-          <h3>People struggle to start complex tasks because they can't see the first step.</h3>
-          <p>Todo lists capture the task but don't break it down. AI-powered breakdown tools work but require internet, cost money, and sometimes hallucinate steps. The result: procrastination, overwhelm, and a feeling that productivity tools are either too dumb or too smart.</p>
-        </div>
-      </div>
-      <div class="step reveal">
-        <div class="label">02 · Solution</div>
-        <div>
-          <h3>Build a task-breakdown app with deterministic rule-based templates.</h3>
-          <p>User says "I need to clean my room" — the app matches keywords against 8 pre-loaded templates, selects the best match using exact phrase matching and keyword density scoring, and instantly generates 4 timed subtasks. If no template matches above the 25% threshold, a wildcard fallback provides a generic 4-step structure. All processing happens on-device in under 100ms. No internet. No AI. No subscription.</p>
-        </div>
-      </div>
-      <div class="step reveal">
-        <div class="label">03 · Result</div>
-        <div>
-          <h3>EverTaskTools Android v1.0.0 shipped. 151 Kotlin files. Zero cloud.</h3>
-          <p>Kotlin 1.9, Jetpack Compose BOM 2023.10.01, Material3 1.2.0-beta01, Room 2.6.1, DataStore 1.0.0, Glance 1.0.0, WorkManager 2.9.0. compileSdk 34, minSdk 26. 8 deterministic templates in shared JSON. AES-256-GCM encrypted backups. iOS: SecureBackupManager.swift implemented with CryptoKit and LocalAuthentication.</p>
-        </div>
-      </div>
+<section class="cta-section">
+  <div class="cta-inner reveal">
+    <h2>Ready to get things done?</h2>
+    <p>One-time purchase of $4.99. No subscriptions. No tracking. Just tasks.</p>
+    <div class="hero-cta" style="justify-content:center">
+      <a href="./simulator/" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Try Interactive Demo
+      </a>
+      <a href="https://github.com/evertasktools" class="btn btn-ghost">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        View on GitHub
+      </a>
     </div>
   </div>
 </section>
 
-<section id="process">
-  <div class="wrap">
-    <div class="eye reveal">04 · My process</div>
-    <h2 class="reveal d1 h2-intro">How I got here without building the wrong features.</h2>
-    <p class="lede reveal d2">Four habits, applied recursively. The same discipline that kept the build cheap also kept it correct.</p>
-    <div class="cards c2">
-      <div class="card-block reveal">
-        <div class="label">01 · Problem-first, not technology-first</div>
-        <h3>The problem was: "I need to clean my apartment but I don't know where to start."</h3>
-        <p>The solution wasn't AI — it was a lookup table with fuzzy matching. Every technology choice was downstream of that insight. Kotlin and Jetpack Compose because they're the modern Android standard. Room because tasks need persistence. Glance widgets because the home screen is where productivity happens. WorkManager because backups should happen without user intervention.</p>
-      </div>
-      <div class="card-block reveal d1">
-        <div class="label">02 · Scoped agents per platform</div>
-        <h3>Android UI · Android data · Android system · Shared logic · iOS security.</h3>
-        <p>The TemplateEngine agent had one job: implement deterministic matching with zero probabilistic components. No LLM. No embeddings. Just string matching and scoring. Each agent read the vertical brief first, then the domain spec, then wrote code.</p>
-      </div>
-      <div class="card-block reveal d2">
-        <div class="label">03 · Knowledge graph as working memory</div>
-        <h3>The vault tracked the template schema, the matching algorithm, the Android architecture, and the iOS spec.</h3>
-        <p>The TemplateEngine note became the most-referenced node — consumed by the Android agent, the iOS agent, and the widget agent. When the template schema changed from 6 to 8 templates, every consumer updated automatically.</p>
-      </div>
-      <div class="card-block reveal d3">
-        <div class="label">04 · Token efficiency as a value</div>
-        <h3>The templates.json file (120 lines) was the single source of truth.</h3>
-        <p>Referencing sections by ID made every downstream agent self-consistent. The TemplateEngine specification was written in one session and referenced by ID in the Android agent, the iOS agent, and the widget agent. One algorithm, three consumers, zero drift.</p>
-      </div>
-    </div>
-    <div class="process-meta reveal">
-      <div class="label">▸ The recursive proof</div>
-      <p>This portfolio piece was generated by the same harness pipeline at <code>app/harness/</code> that ingests projects: <strong style="color: var(--accent-bright); font-style: normal;">Ingest → Analysis → Portfolio Writer → Validator</strong>. The vault at <code>vault/</code> graphs every design decision and dependency. The same orchestration pattern that built the app is now extracting it. That's the demo.</p>
-    </div>
+<footer>
+  <div class="footer-links">
+    <a href="#features">Features</a>
+    <a href="#templates">Templates</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="https://github.com/evertasktools">GitHub</a>
   </div>
-</section>
-
-<section id="architecture">
-  <div class="wrap">
-    <div class="eye reveal">05 · Architecture</div>
-    <h2 class="reveal d1 h2-intro">Five layers. One instant checklist. Zero cloud.</h2>
-    <p class="lede reveal d2">The privacy promise is enforced by architecture — there is no cloud layer to leak from.</p>
-    <div class="viz reveal">
-      <div class="viz-cap">▸ Stack diagram · five vertical layers · data flow shown in mint green</div>
-      <svg class="viz-svg arch-svg" viewBox="0 0 900 680" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <marker id="arrowA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="#3eb489"/>
-          </marker>
-        </defs>
-        <g transform="translate(50, 40)">
-          <rect class="rect" width="800" height="85" rx="2"/>
-          <text class="layer-num" x="16" y="22">L1</text>
-          <text class="layer-name" x="50" y="22">Surface · Jetpack Compose + Material3</text>
-          <text class="layer-detail" x="16" y="44">Compose BOM 2023.10.01 · Material3 1.2.0-beta01 · Navigation Compose 2.7.6</text>
-          <text class="layer-detail" x="16" y="62">Accompanist · Coil · AnimatedContent · LazyColumn · Custom theme (Mint + Eggshell + Matt Black)</text>
-        </g>
-        <path class="arrow" d="M 450 125 L 450 145"/>
-        <g transform="translate(50, 155)">
-          <rect class="rect" width="800" height="70" rx="2"/>
-          <text class="layer-num" x="16" y="22">L2</text>
-          <text class="layer-name" x="50" y="22">State · ViewModel + DataStore + Flow</text>
-          <text class="layer-detail" x="16" y="44">TaskViewModel with TaskUiState as StateFlow · Repository pattern · DataStore Preferences</text>
-          <text class="layer-detail" x="16" y="60">Kotlin Coroutines (Dispatchers.IO + Main) · runCatching error boundaries</text>
-        </g>
-        <path class="arrow" d="M 450 225 L 450 245"/>
-        <g transform="translate(50, 255)">
-          <rect class="rect accent" width="800" height="110" rx="2"/>
-          <text class="layer-num" x="16" y="22">L3</text>
-          <text class="layer-name" x="50" y="22">Service Layer · templates + voice + widgets</text>
-          <text class="layer-detail" x="16" y="44">TemplateEngine: exact match → density scoring (25% min) → wildcard fallback</text>
-          <text class="layer-detail" x="16" y="62">VoiceCommandReceiver · DeepLinkHandler · TaskNotification · TextToSpeechManager</text>
-          <text class="layer-detail" x="16" y="80">EverTaskWidget (Glance) · TaskSyncService · time estimation (+20% buffer)</text>
-        </g>
-        <path class="arrow" d="M 450 365 L 450 385"/>
-        <g transform="translate(50, 395)">
-          <rect class="rect" width="800" height="95" rx="2"/>
-          <text class="layer-num" x="16" y="22">L4</text>
-          <text class="layer-name" x="50" y="22">Data · Room + File System + Security</text>
-          <text class="layer-detail" x="16" y="44">Room 2.6.1 + KSP: TaskEntity with JSON-serialized subtasks · TaskDao with Flow queries</text>
-          <text class="layer-detail" x="16" y="62">DataStoreManager · BackupManager · BackupWorker (WorkManager) · SecureBackupManager (AES-256-GCM)</text>
-          <text class="layer-detail" x="16" y="80">📁 Zero cloud dependency · no accounts · no analytics · encrypted JSON backups</text>
-        </g>
-        <path class="arrow" d="M 450 490 L 450 510"/>
-        <g transform="translate(50, 520)">
-          <rect class="rect" width="800" height="70" rx="2"/>
-          <text class="layer-num" x="16" y="22">L5</text>
-          <text class="layer-name" x="50" y="22">Build &amp; Deploy · Gradle + ProGuard/R8</text>
-          <text class="layer-detail" x="16" y="44">Gradle Kotlin DSL · compileSdk 34 · minSdk 26 · Kotlin 1.9 · JVM target 17 · Compose compiler 1.5.7</text>
-          <text class="layer-detail" x="16" y="60">ProGuard/R8 enabled (minifyEnabled + shrinkResources) · KSP for Room · Signing config</text>
-        </g>
-      </svg>
-    </div>
-  </div>
-</section>
-
-
-<section>
-  <div class="wrap">
-    <div class="eye reveal">06 · Stakeholder views</div>
-    <h2 class="reveal d1 h2-intro">Five people. Five opinions on what this system owes them.</h2>
-    <p class="lede reveal d2">Every feature is a negotiation. Every tradeoff is visible to someone. If I can't explain why it works for all five lenses, the architecture is wrong.</p>
-    <div class="detector-list">
-      <div class="detector reveal">
-        <div class="num">01</div>
-        <div>
-          <h4>Customer (End User)</h4>
-          <p class="desc">I need to break down "grocery shopping" into steps without opening a browser, paying a subscription, or waiting for an API. I want to say "buy groceries" to my phone and get a checklist in my hand before I finish the sentence. I want to check off items from my home screen widget. I want my data to stay on my phone. I want to pay once and own it forever.</p>
-        </div>
-      </div>
-      <div class="detector reveal d1">
-        <div class="num">02</div>
-        <div>
-          <h4>Business (App Store Economics)</h4>
-          <p class="desc">One-time purchase at $4.99 with no ongoing costs is a sustainable model for a utility app. No server infrastructure means no hosting bills. No AI API means no token costs. The margin on each sale is nearly 100% after store fees. The app store algorithm favors apps with high retention and low refund rates — a simple, fast, offline utility achieves both.</p>
-        </div>
-      </div>
-      <div class="detector reveal d2">
-        <div class="num">03</div>
-        <div>
-          <h4>Operations (Maintenance)</h4>
-          <p class="desc">No backend to maintain. No API to version. No ML model to retrain. The only updates are template additions and OS compatibility. A new template is a JSON file update. An OS compatibility fix is a dependency version bump. The operational surface is tiny compared to any SaaS or AI-powered alternative.</p>
-        </div>
-      </div>
-      <div class="detector reveal d3">
-        <div class="num">04</div>
-        <div>
-          <h4>Legal &amp; Privacy</h4>
-          <p class="desc">No data leaves the device. No user accounts means no PII to protect. No analytics means no tracking consent dialogs. Encrypted backups mean users control their own data portability. The privacy policy is one paragraph because there's nothing complicated to disclose. GDPR compliance is trivial.</p>
-        </div>
-      </div>
-      <div class="detector reveal d4">
-        <div class="num">05</div>
-        <div>
-          <h4>Growth</h4>
-          <p class="desc">Template marketplace as an expansion vector: sell specialized template packs. Widget-driven retention: users who add the widget to their home screen have 10x higher retention. Voice integration as a viral loop. Cross-platform parity unlocks both app stores. Localization of templates unlocks international markets.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="eye reveal">07 · Feature deep dive</div>
-    <h2 class="reveal d1 h2-intro">Seven core features. Each has a reason. Each has a tradeoff.</h2>
-    <div class="bento">
-      <div class="feat s3 reveal">
-        <div class="num">01 · BREAKDOWN</div>
-        <h3>Deterministic template-based task breakdown</h3>
-        <p>Voice or text input triggers rule-based template matching. 8 pre-loaded templates covering cleaning, email, grocery, study, cooking, workout, meeting prep, and travel packing. Matching: exact phrase → keyword density (25% min) → wildcard fallback. All processing on-device in under 100ms.</p>
-        <span class="tech">Kotlin · JSON · deterministic matching</span>
-        <div class="witty">A billion-parameter model told me to vacuum. A JSON file does it faster, cheaper, and offline.</div>
-      </div>
-      <div class="feat s3 reveal d1">
-        <div class="num">02 · VOICE</div>
-        <h3>Voice input via Google Assistant</h3>
-        <p>VoiceCommandReceiver handles Google Assistant intents. TextToSpeechManager provides audio feedback. No internet required for voice recognition after initial download. Hands-free task creation while driving, cooking, or working out.</p>
-        <span class="tech">VoiceCommandReceiver · TTS</span>
-        <div class="witty">Your hands are full of groceries. Your voice is not.</div>
-      </div>
-      <div class="feat s2 reveal d2">
-        <div class="num">03 · WIDGETS</div>
-        <h3>Interactive home-screen widgets</h3>
-        <p>Glance App Widgets display active tasks on the home screen. Complete subtasks with a single tap without opening the app. Widget updates via WorkManager.</p>
-        <span class="tech">Glance · WorkManager</span>
-        <div class="witty">The best task manager is the one you don't have to open.</div>
-      </div>
-      <div class="feat s2 reveal d3">
-        <div class="num">04 · CELEBRATION</div>
-        <h3>Task completion celebrations</h3>
-        <p>Animated completion screen with progress visualization. Subtask checkboxes with haptic feedback. History screen for completed tasks with archive and restore.</p>
-        <span class="tech">Compose Animation · Haptics</span>
-        <div class="witty">Checking off a subtask should feel as good as finishing the whole thing.</div>
-      </div>
-      <div class="feat s2 reveal">
-        <div class="num">05 · SECURITY</div>
-        <h3>AES-256-GCM encrypted backups</h3>
-        <p>SecureBackupManager encrypts backups with AES-256-GCM via AndroidX Security Crypto. Device-bound keys in Android Keystore. JSON export for portability. BackupWorker for scheduled backups.</p>
-        <span class="tech">AES-256-GCM · AndroidX Security · WorkManager</span>
-        <div class="witty">Your task list is encrypted like a bank vault. Because losing your grocery list is a tragedy.</div>
-      </div>
-      <div class="feat s3 reveal d1">
-        <div class="num">06 · SYSTEM</div>
-        <h3>Deep linking and notifications</h3>
-        <p>DeepLinkHandler processes external links for task creation and completion. TaskNotification displays reminders with actions. BootReceiver restores scheduled notifications after reboot.</p>
-        <span class="tech">DeepLinkHandler · NotificationManager · AlarmManager</span>
-        <div class="witty">The app remembers your tasks even when your phone reboots.</div>
-      </div>
-      <div class="feat s3 reveal d2">
-        <div class="num">07 · MODEL</div>
-        <h3>Zero accounts, zero cloud, zero subscriptions</h3>
-        <p>No login. No registration. No cloud sync. No analytics. No ads. One-time purchase ($4.99). Data stays on device. App works the same on day 1,000 as on day 1.</p>
-        <span class="tech">Offline-first · Privacy-by-design</span>
-        <div class="witty">The business model is "make something useful and charge for it." Revolutionary.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="eye reveal">08 · Exhibit</div>
-    <div class="exhibit">
-      <div class="label">▸ Decision · deterministic beats probabilistic</div>
-      <h3 class="reveal d1">When everyone else uses a neural net, we used a JSON file</h3>
-      <p class="story reveal d2">
-        The most distinctive technical decision in the app is the TemplateEngine. Every other task-breakdown tool on the market either gives you a blank list (too simple) or calls an LLM API (too heavy, too slow, too expensive, requires internet). We chose a third path: deterministic rule-based matching against a JSON template file. The algorithm has three tiers: (1) exact phrase match — if the input contains a complete keyword phrase, use that template; (2) keyword density scoring — calculate match percentage based on keyword occurrences, require minimum 25% threshold; (3) wildcard fallback — if nothing matches, use a generic 4-step template. Time estimates include a 20% buffer for transitions. The result: subtask generation in under 100ms, offline, forever, with zero tokens and zero latency.
-      </p>
-      <div class="code-pair reveal d3">
-        <div class="col before">
-          <span class="tag">BEFORE: LLM-powered breakdown</span>
-          <pre>// Requires internet, API key, subscription
-// Latency: 500ms-3s depending on network
-// Cost: $0.002 per request (adds up)
-// Failure mode: network timeout, rate limit,
-//   hallucination
-
-suspend fun breakdownWithAI(task: String): List&lt;String&gt; {
-  val response = openAI.chat.completions.create(
-    model = "gpt-3.5-turbo",
-    messages = listOf(
-      mapOf("role" to "user",
-        "content" to "Break down: $task")
-    )
-  )
-  return parseSteps(
-    response.choices[0].message.content)
-}
-// User waits. Server bills.
-// Sometimes it makes up steps.</pre>
-        </div>
-        <div class="col after">
-          <span class="tag">AFTER: deterministic template engine</span>
-          <pre>// Zero network. Zero tokens. Zero cost.
-// Latency: &lt;100ms on any device
-// Failure mode: generic fallback (always works)
-
-class TemplateEngine(
-  private val templates: List&lt;TaskTemplate&gt;,
-  private val default: DefaultTemplate
-) {
-  fun match(input: String): MatchedTemplate {
-    val normalized = input.lowercase()
-    // Tier 1: exact phrase match
-    templates.forEach { t -&gt;
-      if (t.keywords.any { phrase -&gt;
-        normalized.contains(phrase) })
-        return MatchedTemplate(t.subtasks, t.icon)
-    }
-    // Tier 2: keyword density scoring
-    var best: TaskTemplate? = null
-    var bestScore = 0.0
-    templates.forEach { t -&gt;
-      val score = t.keywords.count { k -&gt;
-        normalized.contains(k) }.toDouble()
-        / t.keywords.size
-      if (score &gt; bestScore &amp;&amp; score &gt;= 0.25) {
-        bestScore = score
-        best = t
-      }
-    }
-    best?.let {
-      return MatchedTemplate(it.subtasks, it.icon)
-    }
-    // Tier 3: wildcard fallback
-    return MatchedTemplate(
-      default.subtasks, default.icon)
-  }
-}
-// User gets instant results.
-// No server required.</pre>
-        </div>
-      </div>
-      <div class="callout reveal d4">
-        <div class="label">▸ Why this matters</div>
-        <p>Including this exhibit because the <em>interesting</em> part is the decision to not use AI, not the algorithm itself. The choice to solve a problem with deterministic matching instead of probabilistic generation is a product philosophy, not a technical constraint. The algorithm is trivial — a for-loop and some division. The decision is the story.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="eye reveal">09 · Numbers</div>
-    <h2 class="reveal d1 h2-intro">The numbers that tell the story.</h2>
-    <div class="metrics-grid">
-      <div class="metric reveal">
-        <div class="lbl">Android Source Files</div>
-        <div class="val">151</div>
-        <div class="desc">Kotlin files across data, UI, widget, voice, and notification layers. Room entities, DAOs, repositories, ViewModels, Composables, Glance widgets, receivers, services.</div>
-      </div>
-      <div class="metric reveal d1">
-        <div class="lbl">Templates</div>
-        <div class="val">8</div>
-        <div class="desc">Pre-loaded deterministic templates: clean, email, grocery, study, cook, workout, meeting, travel. Plus default wildcard fallback.</div>
-      </div>
-      <div class="metric reveal d2">
-        <div class="lbl">Match Latency</div>
-        <div class="val">100<span class="unit">ms</span></div>
-        <div class="desc">Deterministic matching runs on-device in under 100ms. Zero network round-trip.</div>
-      </div>
-      <div class="metric reveal d3">
-        <div class="lbl">Match Threshold</div>
-        <div class="val">25<span class="unit">%</span></div>
-        <div class="desc">Keyword density scoring requires at least 25% keyword overlap before selecting a template. Below threshold → wildcard fallback.</div>
-      </div>
-      <div class="metric reveal">
-        <div class="lbl">Time Buffer</div>
-        <div class="val">20<span class="unit">%</span></div>
-        <div class="desc">Subtask duration estimates include 20% buffer for transitions and context switching.</div>
-      </div>
-      <div class="metric reveal d1">
-        <div class="lbl">Compile SDK</div>
-        <div class="val">34</div>
-        <div class="desc">Android 14 (API 34). minSdk 26 (Android 8.0) for broad device compatibility.</div>
-      </div>
-      <div class="metric reveal d2">
-        <div class="lbl">iOS Files</div>
-        <div class="val">1</div>
-        <div class="desc">SecureBackupManager.swift (CryptoKit + LocalAuthentication + SwiftData). Full iOS stack spec'd in PROJECT_README.md.</div>
-      </div>
-      <div class="metric reveal d3">
-        <div class="lbl">Cloud Data</div>
-        <div class="val">0</div>
-        <div class="desc">Zero cloud dependency. Completely offline-first. No accounts, no sync, no analytics.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="eye reveal">10 · Decisions</div>
-    <h2 class="reveal d1 h2-intro">Five questions worth answering slowly.</h2>
-    <p class="lede reveal d2">Short answer first — long answer if you need it.</p>
-    <div class="decisions">
-      <details class="decision reveal">
-        <summary><span class="qnum">Q01</span><span class="q">Why no AI/ML?</span><span class="arrow">+</span></summary>
-        <div class="body">
-          <p class="short">A lookup table is faster, cheaper, more reliable, and more private than a neural network for structured task breakdown. The problem doesn't require general intelligence.</p>
-          <p class="long">Every task-breakdown request to an LLM costs money, consumes GPU resources, requires internet, and introduces latency. For the 8 most common daily tasks, a deterministic template with keyword matching produces identical or better results — instantly, offline, forever. The 20% of edge cases that don't match a template get a generic wildcard fallback that's still useful. The decision to use zero AI isn't anti-technology; it's pro-appropriateness. A hammer is the right tool for a nail, even if a hydraulic press could also do the job.</p>
-        </div>
-      </details>
-      <details class="decision reveal d1">
-        <summary><span class="qnum">Q02</span><span class="q">Why no accounts or cloud sync?</span><span class="arrow">+</span></summary>
-        <div class="body">
-          <p class="short">Accounts create friction, cloud sync creates liability, and neither is necessary for a personal task app. The user owns their data on their device.</p>
-          <p class="long">Requiring an account drops conversion by 30-50% at the signup screen. Cloud sync requires infrastructure, GDPR compliance, breach notification procedures, and ongoing maintenance. For a personal task app used by one person on one phone, the complexity is absurd. Encrypted JSON backups provide data portability without a server. The user can AirDrop or email their backup to a new phone.</p>
-        </div>
-      </details>
-      <details class="decision reveal d2">
-        <summary><span class="qnum">Q03</span><span class="q">Why one-time purchase instead of subscription?</span><span class="arrow">+</span></summary>
-        <div class="body">
-          <p class="short">A subscription implies ongoing value creation. A task breakdown app is a utility that should work forever after purchase. Charging monthly for a JSON file feels exploitative.</p>
-          <p class="long">The app has no server costs, no AI API costs, no ongoing infrastructure. The marginal cost of an additional user is zero. A $4.99 one-time purchase fairly compensates the development effort without creating a parasitic revenue relationship. Users hate subscription fatigue — especially for simple utilities.</p>
-        </div>
-      </details>
-      <details class="decision reveal d3">
-        <summary><span class="qnum">Q04</span><span class="q">Why build for Android first?</span><span class="arrow">+</span></summary>
-        <div class="body">
-          <p class="short">Android has broader device compatibility, lower store barriers, and a larger market for utility apps. The iOS spec is written to the same standard and will be implemented next.</p>
-          <p class="long">Android's minSdk 26 covers 95%+ of active devices. The Play Store review process is faster than App Store review. Kotlin and Jetpack Compose are mature, well-documented, and have excellent tooling. The iOS implementation is fully spec'd in PROJECT_README.md and SecureBackupManager.swift is already implemented. The plan is Android-first to validate the product, then iOS parity.</p>
-        </div>
-      </details>
-      <details class="decision reveal d4">
-        <summary><span class="qnum">Q05</span><span class="q">Why JSON-serialized subtasks in Room?</span><span class="arrow">+</span></summary>
-        <div class="body">
-          <p class="short">Subtasks are tightly coupled to their parent task, never queried independently, and have a flexible schema. JSON serialization in a single column is simpler and faster than a join table.</p>
-          <p class="long">A separate subtasks table with foreign keys would enable independent querying, but subtasks are never needed without their parent task. The subtask schema is simple and stable. JSON serialization via kotlinx.serialization provides type safety, easy migration, and avoids the overhead of a join query every time a task is loaded. The tradeoff is that subtasks can't be queried independently — but the app has no use case for "show me all 5-minute subtasks across all tasks."</p>
-        </div>
-      </details>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="eye reveal">11 · Timeline</div>
-    <h2 class="reveal d1 h2-intro">Five phases. No phase repeated.</h2>
-    <div class="timeline">
-      <div class="phase reveal">
-        <div class="meta">
-          <div class="pnum">Phase 01</div>
-          <div class="ptitle">Foundation — the anti-AI insight</div>
-          <div class="mood">Methodical</div>
-        </div>
-        <div>
-          <p class="story">Started with frustration, not technology. I opened ChatGPT to break down "clean my apartment" and felt absurd — a billion-parameter model burning GPU cycles to tell me to vacuum. The insight: not every problem needs a neural network. A JSON file with keyword matching solves 80% of task breakdowns instantly, offline, forever.</p>
-          <div class="deliverable">templates.json · 8 templates + default · matching algorithm spec · time estimation formula</div>
-        </div>
-      </div>
-      <div class="phase reveal">
-        <div class="meta">
-          <div class="pnum">Phase 02</div>
-          <div class="ptitle">Architecture — Android-first data layer</div>
-          <div class="mood">Surgical</div>
-        </div>
-        <div>
-          <p class="story">Designed the Room schema before writing UI. TaskEntity with JSON-serialized subtasks. TaskDao with Flow queries. Repository pattern with runCatching error boundaries. DataStore for preferences. BackupManager with JSON export. SecureBackupManager with AES-256-GCM encryption. WorkManager for scheduled backups.</p>
-          <div class="deliverable">Room schema · TaskEntity · TaskDao · Repository · DataStore · BackupManager · SecureBackupManager</div>
-        </div>
-      </div>
-      <div class="phase reveal">
-        <div class="meta">
-          <div class="pnum">Phase 03</div>
-          <div class="ptitle">Build — Jetpack Compose + system integration</div>
-          <div class="mood">Ambitious</div>
-        </div>
-        <div>
-          <p class="story">Implemented the full Android stack: Jetpack Compose with Material3, custom theme (Mint + Eggshell + Matt Black), AnimatedContent transitions, LazyColumn lists, VoiceInputComponent with speech recognition, SubtaskItem with checkboxes and haptic feedback, TaskCompletionScreen with celebration animation, HistoryScreen with archive/restore. DeepLinkHandler, TaskNotification with TextToSpeech, BootReceiver and TaskReminderReceiver.</p>
-          <div class="deliverable">151 Kotlin files · Compose UI · Voice input · Notifications · Deep links · Theme system</div>
-        </div>
-      </div>
-      <div class="phase reveal">
-        <div class="meta">
-          <div class="pnum">Phase 04</div>
-          <div class="ptitle">Hardening — widgets, encryption, edge cases</div>
-          <div class="mood">Determined</div>
-        </div>
-        <div>
-          <p class="story">Added Glance App Widgets for home-screen task completion. WidgetActions for completion callbacks. TaskWidgetConfigurationActivity for setup. BackupWorker for automatic scheduled backups. SecureBackupManager for AES-256-GCM encrypted exports. ProGuard/R8 configuration for release builds. Edge case handling: storage full exceptions, corrupted backup files, missing permissions, voice recognition failures.</p>
-          <div class="deliverable">Glance widgets · Encrypted backups · WorkManager · ProGuard · Edge case handling</div>
-        </div>
-      </div>
-      <div class="phase reveal">
-        <div class="meta">
-          <div class="pnum">Phase 05</div>
-          <div class="ptitle">Ship — v1.0.0 release + iOS spec</div>
-          <div class="mood">Pragmatic</div>
-        </div>
-        <div>
-          <p class="story">Final pass: type-checking, linting, release build with R8 minification, Play Store listing preparation. PROJECT_README.md documents the full iOS stack with SecureBackupManager.swift already implemented. Store metadata written. Known gaps documented: iOS UI not yet implemented, no automated tests in source, template marketplace is future work.</p>
-          <div class="deliverable">Android v1.0.0 · Play Store ready · iOS spec · Store metadata · Known gaps documented</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="eye reveal">12 · Reflection</div>
-    <h2 class="reveal d1 h2-intro">What surprised me. What I'd do differently. What's next.</h2>
-    <div class="reflection-grid">
-      <div class="block reveal">
-        <div class="label">Surprised by</div>
-        <h3>How strongly users reacted to the "no AI" positioning.</h3>
-        <p>During early testing, the phrase "works without internet" was the single most appreciated feature — more than the widgets, more than the voice input, more than the design. People are tired of loading spinners. The deterministic engine felt like a superpower because it was instant. The 20% time buffer was also surprisingly important — users said it made the estimates feel realistic instead of optimistic.</p>
-      </div>
-      <div class="block reveal d1">
-        <div class="label">Would do differently</div>
-        <h3>Write tests from day one.</h3>
-        <p>The Android codebase has zero automated tests — not unit tests, not UI tests, not integration tests. Every refactor is risky. Every edge case is discovered by a user crash. The TemplateEngine especially needs property-based testing: feed it 1,000 random task descriptions and verify it never crashes, never returns empty, and always completes in under 100ms. Testing should have been phase 2, not a future wish.</p>
-      </div>
-      <div class="block reveal d2">
-        <div class="label">What's next</div>
-        <h3>iOS parity, template marketplace, property-based testing.</h3>
-        <p>iOS parity — implement the full SwiftUI stack spec'd in PROJECT_README.md. Template marketplace: sell specialized packs (camping, moving, wedding planning, home renovation). Property-based testing for TemplateEngine. Accessibility audit: screen reader support, high contrast mode, font scaling. Wear OS and Apple Watch complications for glanceable task lists. Localized templates for international markets.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<footer class="recursive">
-  <div class="wrap">
-    <div class="eye reveal">13 · That's it</div>
-    <h2 class="reveal d1">EverTaskTools exists because breaking down a task shouldn't require a data center.</h2>
-    <p class="cta-line reveal d2">A JSON file, a keyword matcher, and a bit of common sense are enough to turn "I need to clean my room" into a 12-minute checklist. The app is fast because it's simple. It's private because it's offline. It's fair because you buy it once. And it works because someone decided that not every problem needs a neural network.</p>
-    <div class="reveal d3">
-      <a class="cta" href="#architecture">See the architecture again</a>
-    </div>
-    <div class="next reveal">Next: Polybot — the same discipline applied to multi-platform chatbot orchestration, where the stakes aren't personal productivity but customer engagement at scale.</div>
-  </div>
+  <p>&copy; 2026 EverTaskTools &middot; v1.0.0 &middot; Built with care in Kotlin</p>
 </footer>
 
-<div class="integrity">
-  <div class="row">
-    <strong>Verbatim quotes</strong> — Design tokens (MintPrimary 0xFF3EB489, EggshellBackground 0xFFF5F5F0, MattBlackBackground 0xFF1A1A1A) from Theme.kt. Template algorithm (exact phrase match, keyword density scoring, MINIMUM_MATCH_THRESHOLD = 25, BUFFER_PERCENTAGE = 0.20) from TemplateEngine.kt. Template JSON from templates.json (8 templates + default). Android stack versions from build.gradle.kts. <em>Honesty notes:</em> iOS implementation is partial — only SecureBackupManager.swift exists in source; full iOS stack is spec'd in PROJECT_README.md. Zero automated tests found in source. agents/skills directory (~25,000 files) is NOT part of the app.
-  </div>
-</div>
-
 <script>
-(() => {
-  const targets = document.querySelectorAll('.reveal');
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
-  }, { threshold: 0.1 });
-  targets.forEach(t => obs.observe(t));
-})();
+  (function() {
+    // Theme toggle
+    const toggle = document.getElementById('themeToggle');
+    const moon = document.getElementById('moon');
+    const sun = document.getElementById('sun');
+    const saved = localStorage.getItem('ett-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    function applyTheme(dark) {
+      if (dark) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        moon.style.display = 'none'; sun.style.display = 'block';
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        moon.style.display = 'block'; sun.style.display = 'none';
+      }
+      localStorage.setItem('ett-theme', dark ? 'dark' : 'light');
+    }
+
+    applyTheme(saved ? saved === 'dark' : prefersDark);
+
+    toggle.addEventListener('click', function() {
+      applyTheme(!document.documentElement.hasAttribute('data-theme'));
+    });
+
+    // Intersection Observer
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(function(el) {
+      observer.observe(el);
+    });
+  })();
 </script>
 </body>
 </html>

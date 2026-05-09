@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>EverTaskTools Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --mint: #3EB489;
+      --mint-dark: #2E9A70;
+      --mint-light: #D4F5E9;
+      --bg-light: #F5F5F0;
+      --surface-light: #FAFAF8;
+      --bg-dark: #1A1A1A;
+      --surface-dark: #262626;
+      --error: #E53E3E;
+      --text-light: #1A1A1A;
+      --text-dark: #F5F5F0;
+      --text-muted-light: #6B6B6B;
+      --text-muted-dark: #A3A3A3;
+      --border-light: #E0E0DA;
+      --border-dark: #3D3D3D;
+      --shadow: 0 8px 32px rgba(0,0,0,0.18);
+      --radius-card: 16px;
+      --radius-btn: 12px;
+      --radius-pill: 9999px;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-serif: Georgia, 'Times New Roman', serif;
+      --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [data-theme="light"] {
+      --bg: var(--bg-light);
+      --surface: var(--surface-light);
+      --text: var(--text-light);
+      --text-muted: var(--text-muted-light);
+      --border: var(--border-light);
+      --input-bg: #FFFFFF;
+      --overlay: rgba(26,26,26,0.85);
+    }
+    [data-theme="dark"] {
+      --bg: var(--bg-dark);
+      --surface: var(--surface-dark);
+      --text: var(--text-dark);
+      --text-muted: var(--text-muted-dark);
+      --border: var(--border-dark);
+      --input-bg: #2E2E2E;
+      --overlay: rgba(0,0,0,0.92);
+    }
+    [data-theme="auto"] {
+      --bg: var(--bg-light);
+      --surface: var(--surface-light);
+      --text: var(--text-light);
+      --text-muted: var(--text-muted-light);
+      --border: var(--border-light);
+      --input-bg: #FFFFFF;
+      --overlay: rgba(26,26,26,0.85);
+    }
+    @media (prefers-color-scheme: dark) {
+      [data-theme="auto"] {
+        --bg: var(--bg-dark);
+        --surface: var(--surface-dark);
+        --text: var(--text-dark);
+        --text-muted: var(--text-muted-dark);
+        --border: var(--border-dark);
+        --input-bg: #2E2E2E;
+        --overlay: rgba(0,0,0,0.92);
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; font-family: var(--font-sans); background: #C4C4C0; }
+    body { display: flex; align-items: center; justify-content: center; padding: 16px; }
+
+    /* iPhone Frame */
+    .phone {
+      width: 375px;
+      height: 812px;
+      background: var(--bg);
+      border-radius: 48px;
+      box-shadow: var(--shadow), 0 0 0 12px #1A1A1A, 0 0 0 14px #333;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: background var(--transition), color var(--transition);
+    }
+    .notch {
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 150px; height: 34px;
+      background: #1A1A1A;
+      border-bottom-left-radius: 18px;
+      border-bottom-right-radius: 18px;
+      z-index: 100;
+    }
+    .status-bar {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      z-index: 90;
+      position: relative;
+    }
+    .status-bar .time { position: absolute; left: 50%; transform: translateX(-50%); }
+
+    /* Screens */
+    .screen {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      padding: 8px 20px 20px;
+      overflow-y: auto;
+      position: relative;
+      animation: fadeIn 0.3s ease;
+    }
+    .screen.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.15); opacity: 0.7; } }
+    @keyframes checkPop { 0% { transform: scale(0); } 60% { transform: scale(1.2); } 100% { transform: scale(1); } }
+    @keyframes confettiFall { 0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+    @keyframes waveform { 0%,100% { height: 8px; } 50% { height: 40px; } }
+
+    /* App Bar */
+    .app-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0 16px;
+      min-height: 56px;
+    }
+    .app-bar h1 { font-size: 20px; font-weight: 700; color: var(--text); }
+    .icon-btn {
+      width: 44px; height: 44px;
+      border-radius: var(--radius-btn);
+      border: none;
+      background: var(--surface);
+      color: var(--text);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: transform 0.15s, background var(--transition);
+      font-size: 20px;
+    }
+    .icon-btn:active { transform: scale(0.92); }
+    .back-btn { margin-right: 8px; }
+
+    /* Input */
+    .input-wrap {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .task-input {
+      width: 100%;
+      padding: 16px 56px 16px 16px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-card);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 16px;
+      font-family: var(--font-sans);
+      outline: none;
+      transition: border-color var(--transition);
+    }
+    .task-input:focus { border-color: var(--mint); }
+    .mic-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: var(--mint);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      transition: transform 0.15s;
+    }
+    .mic-btn:active { transform: translateY(-50%) scale(0.9); }
+    .mic-btn.pulsing { animation: pulse 1.2s infinite; }
+
+    /* Chips */
+    .chips-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .chip {
+      padding: 10px 16px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: var(--font-sans);
+      min-height: 40px;
+    }
+    .chip:active { transform: scale(0.95); }
+    .chip:hover, .chip:focus { border-color: var(--mint); color: var(--mint); }
+
+    /* Empty State Header */
+    .empty-header {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 24px 0 8px;
+      line-height: 1.2;
+      animation: slideUp 0.5s ease;
+    }
+    .empty-sub {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      font-family: var(--font-serif);
+      line-height: 1.5;
+    }
+
+    /* Progress */
+    .progress-wrap {
+      margin-bottom: 20px;
+    }
+    .progress-bar-bg {
+      height: 8px;
+      background: var(--border);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--mint);
+      border-radius: var(--radius-pill);
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 0%;
+    }
+    .progress-text {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    /* Subtasks */
+    .subtask-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .subtask-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--surface);
+      border-radius: var(--radius-card);
+      border: 1px solid var(--border);
+      transition: all var(--transition);
+      cursor: pointer;
+      min-height: 64px;
+    }
+    .subtask-card:active { transform: scale(0.98); }
+    .subtask-card.checked { opacity: 0.6; }
+    .subtask-card.checked .subtask-title { text-decoration: line-through; color: var(--text-muted); }
+    .checkbox {
+      width: 24px; height: 24px;
+      border-radius: 6px;
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      font-size: 14px;
+      color: #fff;
+    }
+    .subtask-card.checked .checkbox {
+      background: var(--mint);
+      border-color: var(--mint);
+      animation: checkPop 0.3s ease;
+    }
+    .subtask-info { flex: 1; }
+    .subtask-title { font-size: 15px; font-weight: 500; color: var(--text); transition: color var(--transition); }
+    .subtask-time { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: var(--radius-btn);
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: all 0.2s;
+      min-height: 56px;
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--mint); color: #fff; }
+    .btn-primary:hover { background: var(--mint-dark); }
+    .btn-primary:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; transform: none; }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--mint); color: var(--mint); }
+    .btn-row { display: flex; gap: 12px; margin-top: 12px; }
+    .btn-row .btn { flex: 1; }
+
+    /* Template match badge */
+    .template-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: var(--mint-light);
+      color: var(--mint-dark);
+      border-radius: var(--radius-pill);
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    [data-theme="dark"] .template-badge { background: rgba(62,180,137,0.15); color: var(--mint); }
+
+    /* Completion */
+    .completion-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      animation: fadeIn 0.5s ease;
+    }
+    .checkmark-circle {
+      width: 96px; height: 96px;
+      border-radius: 50%;
+      background: var(--mint);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px;
+      color: #fff;
+      margin-bottom: 24px;
+      animation: checkPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .completion-title { font-size: 26px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .completion-stats { font-size: 15px; color: var(--text-muted); margin-bottom: 32px; font-family: var(--font-serif); }
+
+    /* Confetti */
+    .confetti-container {
+      position: absolute; inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 50;
+    }
+    .confetti {
+      position: absolute;
+      width: 8px; height: 8px;
+      border-radius: 2px;
+      animation: confettiFall 2.5s linear forwards;
+    }
+
+    /* History */
+    .history-list { display: flex; flex-direction: column; gap: 10px; }
+    .history-item {
+      padding: 16px;
+      background: var(--surface);
+      border-radius: var(--radius-card);
+      border: 1px solid var(--border);
+      transition: transform 0.15s;
+    }
+    .history-item:active { transform: scale(0.98); }
+    .history-name { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .history-meta { font-size: 13px; color: var(--text-muted); }
+    .history-empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      text-align: center;
+      gap: 12px;
+    }
+    .history-empty-icon { font-size: 48px; opacity: 0.4; }
+
+    /* Voice Overlay */
+    .voice-overlay {
+      position: absolute; inset: 0;
+      background: var(--overlay);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      color: var(--text-dark);
+      animation: fadeIn 0.2s ease;
+    }
+    .voice-overlay.active { display: flex; }
+    .voice-mic {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: var(--mint);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 44px;
+      color: #fff;
+      margin-bottom: 20px;
+      animation: pulse 1s infinite;
+    }
+    .voice-text { font-size: 18px; font-weight: 600; margin-bottom: 24px; }
+    .waveform {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 50px;
+      margin-bottom: 32px;
+    }
+    .wave-bar {
+      width: 6px;
+      background: var(--mint);
+      border-radius: 3px;
+      animation: waveform 0.8s ease-in-out infinite;
+    }
+    .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+    .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+    .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+    .wave-bar:nth-child(5) { animation-delay: 0.15s; }
+
+    /* Settings */
+    .settings-section {
+      background: var(--surface);
+      border-radius: var(--radius-card);
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-label { font-size: 15px; font-weight: 500; color: var(--text); }
+    .settings-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+    .settings-col { flex: 1; }
+    .toggle {
+      width: 52px; height: 30px;
+      border-radius: 15px;
+      background: var(--border);
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle.on { background: var(--mint); }
+    .toggle-knob {
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+    .toggle.on .toggle-knob { transform: translateX(22px); }
+    .segmented {
+      display: flex;
+      background: var(--bg);
+      border-radius: var(--radius-btn);
+      padding: 3px;
+      gap: 3px;
+    }
+    .segment {
+      padding: 8px 14px;
+      border-radius: 9px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: all 0.15s;
+    }
+    .segment.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .about-block {
+      text-align: center;
+      padding: 24px 16px;
+      color: var(--text-muted);
+    }
+    .about-version { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+    .about-tagline { font-size: 13px; font-family: var(--font-serif); font-style: italic; }
+
+    /* Template matching animation */
+    .match-toast {
+      position: absolute;
+      top: 60px; left: 20px; right: 20px;
+      padding: 14px 18px;
+      background: var(--mint);
+      color: #fff;
+      border-radius: var(--radius-card);
+      font-weight: 600;
+      font-size: 14px;
+      z-index: 80;
+      transform: translateY(-120%);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center;
+    }
+    .match-toast.show { transform: translateY(0); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* Responsive */
+    @media (max-width: 420px) {
+      body { padding: 0; align-items: flex-start; }
+      .phone { width: 100vw; height: 100vh; border-radius: 0; box-shadow: none; border: none; }
+      .notch { display: none; }
+    }
+
+    /* Bottom Nav (optional visual) */
+    .bottom-nav {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      z-index: 90;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      height: 100%;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.15s;
+      border: none;
+      background: none;
+      font-family: var(--font-sans);
+    }
+    .nav-item.active { color: var(--mint); }
+    .nav-item span { font-size: 20px; }
+  </style>
+</head>
+<body>
+  <div class="phone" data-theme="light" id="phone">
+    <div class="notch"></div>
+    <div class="status-bar">
+      <span id="status-time">9:41</span>
+      <span class="time" id="status-center"></span>
+      <span>●●●●● LTE 🔋</span>
+    </div>
+
+    <div class="match-toast" id="matchToast">✨ Matched template!</div>
+
+    <!-- Screen: Empty State -->
+    <div class="screen active" id="screen-empty">
+      <div class="app-bar">
+        <h1>EverTaskTools</h1>
+        <button class="icon-btn" onclick="goHistory()" aria-label="History">🕐</button>
+      </div>
+      <div class="empty-header">What do you need to do?</div>
+      <div class="empty-sub">Type or speak a task and we'll break it into timed steps — instantly, offline, no AI.</div>
+      <div class="input-wrap">
+        <input class="task-input" id="taskInput" placeholder="e.g. clean my room" autocomplete="off" />
+        <button class="mic-btn" id="micBtn" onclick="startVoice()" aria-label="Voice input">🎤</button>
+      </div>
+      <div class="chips-label">Quick tasks</div>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <!-- Screen: Active Task -->
+    <div class="screen" id="screen-active">
+      <div class="app-bar">
+        <button class="icon-btn back-btn" onclick="goEmpty()" aria-label="Back">←</button>
+        <h1 id="activeTitle">Task</h1>
+        <button class="icon-btn" onclick="goSettings()" aria-label="Settings">⚙️</button>
+      </div>
+      <div class="template-badge" id="templateBadge">Matched: Default</div>
+      <div class="progress-wrap">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+        <div class="progress-text" id="progressText">0% · 0 min remaining</div>
+      </div>
+      <div class="subtask-list" id="subtaskList"></div>
+      <button class="btn btn-secondary" onclick="addCustomStep()">+ Add Custom Step</button>
+      <button class="btn btn-primary" id="completeBtn" style="margin-top:12px" onclick="completeTask()" disabled>Complete Task</button>
+    </div>
+
+    <!-- Screen: Completion -->
+    <div class="screen" id="screen-completion">
+      <div class="app-bar">
+        <div></div>
+        <h1>Done</h1>
+        <div></div>
+      </div>
+      <div class="completion-wrap">
+        <div class="checkmark-circle">✓</div>
+        <div class="completion-title">Task Complete!</div>
+        <div class="completion-stats" id="completionStats">4 steps · 12 minutes</div>
+        <div class="btn-row" style="width:100%;max-width:280px">
+          <button class="btn btn-secondary" onclick="saveToHistory()">Save to History</button>
+          <button class="btn btn-primary" onclick="goEmpty()">Start New Task</button>
+        </div>
+      </div>
+      <div class="confetti-container" id="confetti"></div>
+    </div>
+
+    <!-- Screen: History -->
+    <div class="screen" id="screen-history">
+      <div class="app-bar">
+        <button class="icon-btn back-btn" onclick="goEmpty()" aria-label="Back">←</button>
+        <h1>History</h1>
+        <div style="width:44px"></div>
+      </div>
+      <div class="history-list" id="historyList"></div>
+      <button class="btn btn-secondary" style="margin-top:auto" onclick="clearHistory()">Clear History</button>
+    </div>
+
+    <!-- Screen: Settings -->
+    <div class="screen" id="screen-settings">
+      <div class="app-bar">
+        <button class="icon-btn back-btn" onclick="goBackFromSettings()" aria-label="Back">←</button>
+        <h1>Settings</h1>
+        <div style="width:44px"></div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-row">
+          <div class="settings-col">
+            <div class="settings-label">Appearance</div>
+            <div class="settings-desc">Choose your theme</div>
+          </div>
+          <div class="segmented">
+            <button class="segment" data-theme-val="light" onclick="setTheme('light')">Light</button>
+            <button class="segment" data-theme-val="dark" onclick="setTheme('dark')">Dark</button>
+            <button class="segment active" data-theme-val="auto" onclick="setTheme('auto')">Auto</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-row">
+          <div class="settings-col">
+            <div class="settings-label">Voice Feedback</div>
+            <div class="settings-desc">Speak when steps complete</div>
+          </div>
+          <div class="toggle" id="toggle-voice" onclick="toggleSetting('voice')"><div class="toggle-knob"></div></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-col">
+            <div class="settings-label">Auto-Lock</div>
+            <div class="settings-desc">Keep screen awake during tasks</div>
+          </div>
+          <div class="toggle" id="toggle-autolock" onclick="toggleSetting('autolock')"><div class="toggle-knob"></div></div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-row" style="cursor:pointer" onclick="alert('In a real app, this would export your history as JSON.')">
+          <div class="settings-col">
+            <div class="settings-label">Backup & Export</div>
+            <div class="settings-desc">Export task history</div>
+          </div>
+          <span style="color:var(--text-muted)">›</span>
+        </div>
+      </div>
+      <div class="settings-section about-block">
+        <div class="about-version">EverTaskTools v1.0.0</div>
+        <div class="about-tagline">No AI. No Cloud. No Accounts.</div>
+      </div>
+    </div>
+
+    <!-- Voice Overlay -->
+    <div class="voice-overlay" id="voiceOverlay" onclick="cancelVoice()">
+      <div class="voice-mic">🎤</div>
+      <div class="voice-text">Listening...</div>
+      <div class="waveform">
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+      </div>
+      <div style="font-size:14px;opacity:0.7">Tap anywhere to cancel</div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <button class="nav-item active" onclick="goEmpty()"><span>🏠</span>Home</button>
+      <button class="nav-item" onclick="goHistory()"><span>🕐</span>History</button>
+      <button class="nav-item" onclick="goSettings()"><span>⚙️</span>Settings</button>
+    </div>
+  </div>
+
+  <script>
+    // ─── Templates ───
+    const templates = [
+      {
+        name: "Clean Room",
+        keywords: ["clean","tidy","room","house","apartment"],
+        subtasks: [
+          {title:"Clear trash & clutter",time:2},
+          {title:"Dust visible surfaces",time:3},
+          {title:"Vacuum/sweep floors",time:5},
+          {title:"Arrange cushions & items",time:2}
+        ]
+      },
+      {
+        name: "Write Email",
+        keywords: ["email","write","send","message","mail"],
+        subtasks: [
+          {title:"Draft subject line",time:1},
+          {title:"Write 3 bullet points",time:3},
+          {title:"Expand to full text",time:5},
+          {title:"Proofread & send",time:2}
+        ]
+      },
+      {
+        name: "Buy Groceries",
+        keywords: ["grocery","shop","buy","food","supermarket"],
+        subtasks: [
+          {title:"Check fridge/pantry",time:3},
+          {title:"Write list by category",time:5},
+          {title:"Shop efficiently",time:20},
+          {title:"Put away items",time:10}
+        ]
+      },
+      {
+        name: "Study Session",
+        keywords: ["study","learn","read","homework","exam"],
+        subtasks: [
+          {title:"Gather materials",time:2},
+          {title:"Set 25min timer (Pomodoro)",time:0},
+          {title:"Focus reading",time:25},
+          {title:"Review notes",time:5}
+        ]
+      },
+      {
+        name: "Cook Dinner",
+        keywords: ["cook","dinner","lunch","food","meal"],
+        subtasks: [
+          {title:"Gather ingredients",time:5},
+          {title:"Prep vegetables",time:10},
+          {title:"Cook main dish",time:15},
+          {title:"Plate & serve",time:3},
+          {title:"Clean as you go",time:5}
+        ]
+      },
+      {
+        name: "Workout",
+        keywords: ["gym","workout","exercise","fitness","run"],
+        subtasks: [
+          {title:"Change & fill water",time:5},
+          {title:"Warm up stretch",time:5},
+          {title:"Main workout",time:30},
+          {title:"Cool down",time:5},
+          {title:"Shower & recover",time:10}
+        ]
+      },
+      {
+        name: "Meeting Prep",
+        keywords: ["meeting","call","zoom","presentation","prep"],
+        subtasks: [
+          {title:"Review agenda",time:3},
+          {title:"Prepare 2 talking points",time:5},
+          {title:"Test tech/screen share",time:2},
+          {title:"Join 2 min early",time:0}
+        ]
+      },
+      {
+        name: "Pack for Trip",
+        keywords: ["pack","travel","trip","luggage","suitcase"],
+        subtasks: [
+          {title:"Check weather forecast",time:1},
+          {title:"List clothes by day",time:5},
+          {title:"Pack toiletries",time:3},
+          {title:"Charge devices & cables",time:5},
+          {title:"Final check & lock",time:2}
+        ]
+      }
+    ];
+
+    const defaultTemplate = {
+      name: "General Task",
+      keywords: [],
+      subtasks: [
+        {title:"Define the goal clearly",time:2},
+        {title:"Gather needed materials",time:5},
+        {title:"Execute main task",time:15},
+        {title:"Review & finalize",time:3}
+      ]
+    };
+
+    const quickChips = ["Clean my room","Buy groceries","Study session","Cook dinner","Workout","Pack for trip","Write email","Prep for meeting"];
+
+    // ─── State ───
+    let state = {
+      theme: load('ett_theme') || 'auto',
+      voice: load('ett_voice') === 'true',
+      autolock: load('ett_autolock') === 'true',
+      history: JSON.parse(load('ett_history') || '[]'),
+      currentTask: null,
+      currentSubtasks: [],
+      currentTemplate: null,
+      startTime: null,
+      prevScreen: 'empty'
+    };
+
+    // ─── Helpers ───
+    function save(key,val){ try{ localStorage.setItem(key,val); }catch(e){} }
+    function load(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } }
+
+    function matchTemplate(input){
+      const words = input.toLowerCase().split(/\s+/).filter(Boolean);
+      let bestMatch = null, bestScore = 0;
+      for(const t of templates){
+        const matches = t.keywords.filter(k => words.includes(k)).length;
+        const score = matches / t.keywords.length;
+        if(score > bestScore && score >= 0.25){ bestScore = score; bestMatch = t; }
+      }
+      return bestMatch || defaultTemplate;
+    }
+
+    function totalMinutes(subtasks){ return subtasks.reduce((s,t)=>s+t.time,0); }
+
+    function formatTime(date){
+      return date.toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+    }
+
+    // ─── UI Builders ───
+    function renderChips(){
+      const el = document.getElementById('chips');
+      el.innerHTML = quickChips.map(c => `<button class="chip" onclick="startTask('${c.replace(/'/g,"\\'")}')">${c}</button>`).join('');
+    }
+
+    function setScreen(name){
+      document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+      document.getElementById('screen-'+name).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+      const map = {empty:0, active:0, completion:0, history:1, settings:2};
+      const idx = map[name];
+      if(idx!=null) document.querySelectorAll('.nav-item')[idx].classList.add('active');
+    }
+
+    // ─── Navigation ───
+    function goEmpty(){ setScreen('empty'); document.getElementById('taskInput').value=''; state.prevScreen='empty'; }
+
+    function goBackFromSettings(){
+      if(state.prevScreen==='active') goActive(); else goEmpty();
+    }
+
+    function startTask(input){
+      document.getElementById('taskInput').value = input;
+      // Show match toast
+      const toast = document.getElementById('matchToast');
+      toast.textContent = '✨ Finding template...';
+      toast.classList.add('show');
+
+      setTimeout(()=>{
+        const matched = matchTemplate(input);
+        state.currentTask = input;
+        state.currentTemplate = matched;
+        state.currentSubtasks = matched.subtasks.map(s=>({...s,checked:false,id:Math.random().toString(36).slice(2)}));
+        state.startTime = Date.now();
+        toast.textContent = `✨ Matched: ${matched.name}`;
+        setTimeout(()=>toast.classList.remove('show'), 600);
+        goActive();
+      }, 300);
+    }
+
+    function goActive(){
+      setScreen('active');
+      state.prevScreen = 'active';
+      document.getElementById('activeTitle').textContent = state.currentTask || 'Task';
+      document.getElementById('templateBadge').textContent = 'Matched: ' + (state.currentTemplate?.name || 'General');
+      renderSubtasks();
+      updateProgress();
+    }
+
+    function renderSubtasks(){
+      const el = document.getElementById('subtaskList');
+      el.innerHTML = state.currentSubtasks.map((s,i)=>`
+        <div class="subtask-card ${s.checked?'checked':''}" onclick="toggleSubtask('${s.id}')">
+          <div class="checkbox">${s.checked?'✓':''}</div>
+          <div class="subtask-info">
+            <div class="subtask-title">${escapeHtml(s.title)}</div>
+            <div class="subtask-time">${s.time} min</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(str){ return str.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+    function toggleSubtask(id){
+      const s = state.currentSubtasks.find(x=>x.id===id);
+      if(s){ s.checked = !s.checked; renderSubtasks(); updateProgress(); }
+    }
+
+    function updateProgress(){
+      const total = state.currentSubtasks.length;
+      const done = state.currentSubtasks.filter(s=>s.checked).length;
+      const pct = total ? Math.round((done/total)*100) : 0;
+      const remaining = totalMinutes(state.currentSubtasks.filter(s=>!s.checked));
+      document.getElementById('progressFill').style.width = pct+'%';
+      document.getElementById('progressText').textContent = `${pct}% · ${remaining} min remaining`;
+      const btn = document.getElementById('completeBtn');
+      btn.disabled = done !== total;
+    }
+
+    function addCustomStep(){
+      const title = prompt('Step name:'); if(!title) return;
+      const time = parseInt(prompt('Minutes (number):'),10)||5;
+      state.currentSubtasks.push({title,time,checked:false,id:Math.random().toString(36).slice(2)});
+      renderSubtasks(); updateProgress();
+    }
+
+    function completeTask(){
+      const elapsed = Math.max(1, Math.round((Date.now()-state.startTime)/60000));
+      const total = state.currentSubtasks.length;
+      const mins = totalMinutes(state.currentSubtasks);
+      document.getElementById('completionStats').textContent = `${total} steps · ${mins} minutes · Completed in ${elapsed} min`;
+      setScreen('completion');
+      fireConfetti();
+    }
+
+    function saveToHistory(){
+      const elapsed = Math.max(1, Math.round((Date.now()-state.startTime)/60000));
+      state.history.unshift({
+        name: state.currentTask,
+        date: new Date().toISOString(),
+        elapsed,
+        steps: state.currentSubtasks.length
+      });
+      save('ett_history', JSON.stringify(state.history));
+      goEmpty();
+    }
+
+    // ─── History ───
+    function goHistory(){
+      setScreen('history');
+      state.prevScreen = 'history';
+      const el = document.getElementById('historyList');
+      if(!state.history.length){
+        el.innerHTML = `<div class="history-empty"><div class="history-empty-icon">🕐</div><div>No completed tasks yet</div></div>`;
+        return;
+      }
+      el.innerHTML = state.history.map(h=>`
+        <div class="history-item">
+          <div class="history-name">${escapeHtml(h.name)}</div>
+          <div class="history-meta">${formatTime(new Date(h.date))} · ${h.steps} steps · ${h.elapsed} min</div>
+        </div>
+      `).join('');
+    }
+
+    function clearHistory(){ state.history=[]; save('ett_history','[]'); goHistory(); }
+
+    // ─── Settings ───
+    function goSettings(){
+      state.prevScreen = document.querySelector('.screen.active')?.id.replace('screen-','') || 'empty';
+      setScreen('settings');
+      updateSettingsUI();
+    }
+
+    function updateSettingsUI(){
+      document.querySelectorAll('.segment').forEach(b=>{
+        b.classList.toggle('active', b.dataset.themeVal===state.theme);
+      });
+      document.getElementById('toggle-voice').classList.toggle('on', state.voice);
+      document.getElementById('toggle-autolock').classList.toggle('on', state.autolock);
+    }
+
+    function setTheme(t){
+      state.theme = t;
+      save('ett_theme', t);
+      document.getElementById('phone').setAttribute('data-theme', t);
+      updateSettingsUI();
+    }
+
+    function toggleSetting(key){
+      state[key] = !state[key];
+      save('ett_'+key, String(state[key]));
+      updateSettingsUI();
+    }
+
+    // ─── Voice ───
+    function startVoice(){
+      document.getElementById('voiceOverlay').classList.add('active');
+      const btn = document.getElementById('micBtn');
+      btn.classList.add('pulsing');
+      state._voiceTimer = setTimeout(()=>{
+        cancelVoice();
+        const picks = quickChips.slice();
+        const pick = picks[Math.floor(Math.random()*picks.length)];
+        startTask(pick);
+      }, 3000);
+    }
+    function cancelVoice(){
+      document.getElementById('voiceOverlay').classList.remove('active');
+      document.getElementById('micBtn').classList.remove('pulsing');
+      if(state._voiceTimer) clearTimeout(state._voiceTimer);
+    }
+
+    // ─── Confetti ───
+    function fireConfetti(){
+      const box = document.getElementById('confetti');
+      box.innerHTML = '';
+      const colors = ['#3EB489','#E53E3E','#F5A623','#4A90D9','#BD10E0','#fff'];
+      for(let i=0;i<50;i++){
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.left = Math.random()*100+'%';
+        c.style.background = colors[Math.floor(Math.random()*colors.length)];
+        c.style.animationDuration = (1.5+Math.random()*1.5)+'s';
+        c.style.animationDelay = (Math.random()*0.5)+'s';
+        c.style.transform = `rotate(${Math.random()*360}deg)`;
+        box.appendChild(c);
+      }
+      setTimeout(()=>box.innerHTML='', 3000);
+    }
+
+    // ─── Clock ───
+    function tick(){
+      const now = new Date();
+      const h = now.getHours();
+      const m = now.getMinutes().toString().padStart(2,'0');
+      document.getElementById('status-time').textContent = `${h%12||12}:${m}`;
+    }
+
+    // ─── Init ───
+    document.getElementById('phone').setAttribute('data-theme', state.theme);
+    renderChips();
+    tick();
+    setInterval(tick, 30000);
+
+    document.getElementById('taskInput').addEventListener('keydown',e=>{
+      if(e.key==='Enter'){ const v=e.target.value.trim(); if(v) startTask(v); }
+    });
+
+    // Pre-populate history demo if empty
+    if(!state.history.length){
+      state.history = [
+        {name:"Clean my room", date:new Date(Date.now()-86400000).toISOString(), elapsed:10, steps:4},
+        {name:"Write email to team", date:new Date(Date.now()-172800000).toISOString(), elapsed:8, steps:4}
+      ];
+      save('ett_history', JSON.stringify(state.history));
+    }
+  </script>
+</body>
+</html>
